@@ -2,15 +2,25 @@ import express from "express"
 import cors from "cors"
 import helmet from "helmet"
 import { connectToDb, getDb } from "./db"
-import { Db, ObjectId } from "mongodb"
+import { Db, ObjectId, WithId } from "mongodb"
 import { z } from "zod"
+import * as dotenv from 'dotenv'
 
+dotenv.config()
 const app = express()
+
+const { MONGO_HOST, MONGO_PORT, MONGO_DBNAME } = process.env
 
 app.use(cors())
 app.use(helmet())
 
 let db : Db
+
+const Error = z.object({
+  error: z.string(),
+});
+
+type Error = z.infer<typeof Error>;
 
 const ListItem = z.object({
   _id: z.string().refine((val) => ObjectId.isValid(val)),
@@ -25,6 +35,7 @@ const User = z.object({
 });
 
 type User = z.infer<typeof User>;
+type UserWithId = WithId<User>;
 
 const List = z.object({
   _id: z.string().refine((val) => ObjectId.isValid(val)),
@@ -35,9 +46,11 @@ const List = z.object({
 
 type List = z.infer<typeof List>;
 
-connectToDb('mongodb://127.0.0.1:27017/todo-app', (err) => {
+let connectionStr = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DBNAME}`
+
+connectToDb(connectionStr, (err) => {
   if(!err){
-    app.listen(8007, () => console.log('Listening!!'))
+    app.listen(process.env.PORT, () => console.log('Listening!!'))
     db = getDb();
   }
 });
@@ -61,22 +74,16 @@ app.get('/lists', (req, res) => {
   //   })
 })
 
-app.get('/users', (req, res) => {
+app.get('/users', async (req: express.Request, res: express.Response<UserWithId[] | Error>) => {
   
-  let users : User[] = [] 
-
-  // db.collection<User>('users')
-  //   .find()
-  //   //.sort({author: 1})
-  //   //.skip(page * booksPerPage)
-  //   //.limit(booksPerPage)
-  //   .forEach(user => users.push(user))
-  //   .then(() => {
-  //     res.status(200).json(users)
-  //   })
-  //   .catch(() => {
-  //     res.status(500).json({error: 'Could not fetch users'})
-  //   })
+  const result = await db.collection<User>('users').find()
+  result.toArray()
+    .then((users) => {
+      res.status(200).json(users)
+    })
+    .catch(() => {
+      res.status(500).json({error: 'Could not fetch users'})
+    })
 })
 
 // app.get('/books/:id', (req, res) => {
