@@ -2,8 +2,9 @@ import express from "express"
 import cors from "cors"
 import helmet from "helmet"
 import { connectToDb, getDb } from "./db"
-import { Db, ObjectId, WithId } from "mongodb"
-import { z } from "zod"
+import { Error, UserWithId, WithError } from "./types"
+import userRoutes from "./routes/user"
+import { Db, ObjectId } from "mongodb"
 import * as dotenv from 'dotenv'
 
 dotenv.config()
@@ -16,36 +17,6 @@ app.use(helmet())
 
 let db : Db
 
-const Error = z.object({
-  error: z.string(),
-});
-
-type Error = z.infer<typeof Error>;
-
-const ListItem = z.object({
-  _id: z.string().refine((val) => ObjectId.isValid(val)),
-  name: z.string(),
-  checked: z.boolean(),
-});
-
-type ListItem = z.infer<typeof ListItem>
-
-const User = z.object({
-  name: z.string(),
-});
-
-type User = z.infer<typeof User>;
-type UserWithId = WithId<User>;
-
-const List = z.object({
-  _id: z.string().refine((val) => ObjectId.isValid(val)),
-  name: z.string(),
-  user: User,
-  items: z.array(ListItem)
-});
-
-type List = z.infer<typeof List>;
-
 let connectionStr = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DBNAME}`
 
 connectToDb(connectionStr, (err) => {
@@ -55,10 +26,12 @@ connectToDb(connectionStr, (err) => {
   }
 });
 
+app.use('/user', userRoutes)
+
 // routes
 app.get('/lists', (req, res) => {
   
-  let lists: List[] = []
+  //let lists: List[] = []
 
   // db.collection('lists')
   //   .find()
@@ -72,18 +45,6 @@ app.get('/lists', (req, res) => {
   //   .catch(() => {
   //     res.status(500).json({error: 'Could not fetch lists'})
   //   })
-})
-
-app.get('/users', async (req: express.Request, res: express.Response<UserWithId[] | Error>) => {
-  
-  const result = await db.collection<User>('users').find()
-  result.toArray()
-    .then((users) => {
-      res.status(200).json(users)
-    })
-    .catch(() => {
-      res.status(500).json({error: 'Could not fetch users'})
-    })
 })
 
 // app.get('/books/:id', (req, res) => {
