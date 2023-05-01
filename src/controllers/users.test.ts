@@ -26,7 +26,7 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
   });
 
   test("create user", () => {
-    userController.createUser({ db: db, userName: name }).then((u) => {
+    userController.create({ db: db, userName: name }).then((u) => {
       user = u;
       expect(u).toBeTruthy();
       expect(u.name).toEqual(name);
@@ -34,14 +34,14 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
   });
 
   test("get user by username", () => {
-    userController.getUser({ db: db, userName: name }).then((u) => {
+    userController.get({ db: db, userName: name }).then((u) => {
       expect(u).toBeTruthy();
       expect(u.name).toEqual(name);
     });
   });
 
   test("fetch user lists", () => {
-    user.fetchAllListsOfUser({ db: db, id: user._id }).then(lists => {
+    user.fetchAllLists({ db: db, id: user._id }).then(lists => {
         expect(lists).toBeInstanceOf(Array<ListWithId>)        
     }).catch(error => {
         expect(error).toEqual("User doesn't have any list created.")
@@ -52,9 +52,9 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
 
   test("set new name", () => {
     userController
-      .setUserName({ db: db, id: user._id, newName: newName })
+      .setName({ db: db, id: user._id, newName: newName })
       .then(() => {
-        userController.getUser({ db: db, userName: name }).then((u) => {
+        userController.get({ db: db, userName: name }).then((u) => {
           expect(u).toBeFalsy();
         });
       });
@@ -62,16 +62,14 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
 
   test("delete user", () => {
     userController
-      .deleteUser({ db: db, id: user._id })
+      .delete({ db: db, id: user._id })
       .then((result) => {
         expect(result).toBeTruthy();
       })
       .then(() => {
-        userController.getUser({ db: db, userName: name }).then((u) => {
+        userController.get({ db: db, userName: name }).then((u) => {
           expect(u).toBeFalsy();
         });
       });
   });
 });
-
-describe("users database tests", () => {});

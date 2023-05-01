@@ -16,6 +16,7 @@ const ListItem = z.object({
 });
 
 type ListItem = z.infer<typeof ListItem>
+type ListItemWithId = WithId<ListItem>;
 
 const User = z.object({
   name: z.string(),
@@ -34,4 +35,4 @@ const List = z.object({
 type List = z.infer<typeof List>;
 type ListWithId = WithId<List>;
 
-export { Error, WithError, User, UserWithId, ListWithId }
+export { Error, WithError, User, UserWithId, ListWithId, ListItemWithId }

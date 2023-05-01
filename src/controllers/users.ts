@@ -2,15 +2,15 @@ import { User, UserWithId, ListWithId } from "../types";
 import { Db, ObjectId } from "mongodb";
 
 interface UserControllerInterface {
-  createUser?(input: { db: Db; userName: string }): Promise<UserWithId>;
-  deleteUser?(input: { db: Db; id: ObjectId }): Promise<boolean>;
-  getUser(input: { db: Db; userName: string }): Promise<UserWithId>;
-  fetchAllListsOfUser?(input: { db: Db, id: ObjectId }): Promise<ListWithId[]>;
-  setUserName?(input: {db: Db, id: ObjectId, newName: string}): Promise<UserWithId>;
+  create?(input: { db: Db; userName: string }): Promise<UserWithId>;
+  delete?(input: { db: Db; id: ObjectId }): Promise<boolean>;
+  get(input: { db: Db; userName: string }): Promise<UserWithId>;
+  fetchAllLists?(input: { db: Db, id: ObjectId }): Promise<ListWithId[]>;
+  setName?(input: {db: Db, id: ObjectId, newName: string}): Promise<UserWithId>;
 }
 
 export class UserController implements UserControllerInterface {
-  getUser = ({ db, userName }: { db: Db; userName: string }) =>
+  get = ({ db, userName }: { db: Db; userName: string }) =>
     new Promise<UserWithId>(async (resolve, reject) => {
       db.collection<User>("users")
         .findOne({ name: userName })
