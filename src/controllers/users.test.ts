@@ -41,7 +41,7 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
   });
 
   test("fetch user lists", () => {
-    user.fetchAllLists({ db: db, id: user._id }).then(lists => {
+    userController.fetchAllLists({ db: db, id: user._id }).then(lists => {
         expect(lists).toBeInstanceOf(Array<ListWithId>)        
     }).catch(error => {
         expect(error).toEqual("User doesn't have any list created.")
