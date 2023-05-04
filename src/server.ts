@@ -2,9 +2,8 @@ import express from "express"
 import cors from "cors"
 import helmet from "helmet"
 import { connectToDb, getDb } from "./db"
-import { Error, UserWithId, WithError } from "./types"
 import userRoutes from "./routes/user"
-import { Db, ObjectId } from "mongodb"
+import { Db } from "mongodb"
 import * as dotenv from 'dotenv'
 
 dotenv.config()

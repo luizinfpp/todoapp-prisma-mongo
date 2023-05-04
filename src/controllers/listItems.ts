@@ -10,5 +10,20 @@ interface ListItemControllerInterface {
 }
 
 export class ListItemController implements ListItemControllerInterface {
-  
+  create(input: { db: Db; text: string; }): Promise<ListItemWithId> {
+    return new Promise((resolve, reject) => {});
+  }
+
+  delete(input: { db: Db; id: ObjectId; }): Promise<boolean> {
+    return new Promise((resolve, reject) => {});
+  }
+
+  isChecked(input: { db: Db; id: ObjectId; }): Promise<ListItemWithId> {
+    return new Promise((resolve, reject) => {});
+  }
+
+  toggleCheck(input: { db: Db; id: ObjectId; }): Promise<ListItemWithId> {
+    return new Promise((resolve, reject) => {});
+  }
+    
 }

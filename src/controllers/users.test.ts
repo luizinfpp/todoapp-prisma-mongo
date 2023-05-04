@@ -4,7 +4,8 @@ import { connectToDb, getDb } from "../db";
 import { Db } from "mongodb";
 import { ListWithId, UserWithId } from "../types";
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = (process.env.VITE_NODE_ENV === "dev");
+
 
 describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
   const name = "test name";
@@ -13,9 +14,9 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
   const userController = new UserController();
   let user: UserWithId;
 
-  const { MONGO_TEST_HOST, MONGO_TEST_PORT, MONGO_TEST_DBNAME } = process.env;
+  const { VITE_MONGO_TEST_HOST, VITE_MONGO_TEST_PORT, VITE_MONGO_TEST_DBNAME } = process.env;
   let db: Db;
-  let connectionStr = `mongodb://${MONGO_TEST_HOST}:${MONGO_TEST_PORT}/${MONGO_TEST_DBNAME}`;
+  let connectionStr = `mongodb://${VITE_MONGO_TEST_HOST}:${VITE_MONGO_TEST_PORT}/${VITE_MONGO_TEST_DBNAME}`;
 
   beforeAll(() => {
     connectToDb(connectionStr, (err) => {
