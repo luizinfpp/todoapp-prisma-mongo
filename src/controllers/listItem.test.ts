@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll } from "vitest";
-import { connectToDb, getDb } from "../db";
+import { connectToDb } from "../db";
 import { Db } from "mongodb";
 import { ListItemWithId } from "../types";
 import { ListItemController } from "./listItems";
@@ -16,11 +16,12 @@ describe.skipIf(!isDev)("list item controller unit tests - with test db", () => 
   let item : ListItemWithId;
   const text = "new item"
 
-  beforeAll(() => {
-    connectToDb(connectionStr, (err) => {
-      if (!err) {
-        db = getDb();
-      }
+  beforeAll(async () => {
+    await connectToDb(connectionStr).then((dbConn) => {
+      db = dbConn;
+    })
+    .catch((err) => {
+      throw new Error(err);
     });
   });
 

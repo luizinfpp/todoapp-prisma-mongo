@@ -1,37 +1,36 @@
-import express from "express"
-import cors from "cors"
-import helmet from "helmet"
-import { connectToDb, getDb } from "./db"
-import userRoutes from "./routes/user"
-import { Db } from "mongodb"
-import * as dotenv from 'dotenv'
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import { connectToDb } from "./db";
+import userRoutes from "./routes/user";
+import { Db } from "mongodb";
+import * as dotenv from "dotenv";
 
-dotenv.config()
-const app = express()
+dotenv.config();
+const app = express();
 
-const { MONGO_HOST, MONGO_PORT, MONGO_DBNAME } = process.env
+const { MONGO_HOST, MONGO_PORT, MONGO_DBNAME } = process.env;
 
-app.use(cors())
-app.use(helmet())
+app.use(cors());
+app.use(helmet());
 
-let db : Db
+let db: Db;
 
-let connectionStr = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DBNAME}`
+let connectionStr = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DBNAME}`;
 
-connectToDb(connectionStr, (err) => {
-  if(!err){
-    app.listen(process.env.PORT, () => console.log('Listening!!'))
-    db = getDb();
-  }
-});
+connectToDb(connectionStr)
+  .then((dbConn) => {
+    db = dbConn;
+  })
+  .catch((err) => {
+    throw new Error(err);
+  });
 
-app.use('/user', userRoutes)
+app.use("/user", userRoutes);
 
 // routes
-app.get('/lists', (req, res) => {
-  
+app.get("/lists", (req, res) => {
   //let lists: List[] = []
-
   // db.collection('lists')
   //   .find()
   //   //.sort({author: 1})
@@ -44,7 +43,7 @@ app.get('/lists', (req, res) => {
   //   .catch(() => {
   //     res.status(500).json({error: 'Could not fetch lists'})
   //   })
-})
+});
 
 // app.get('/books/:id', (req, res) => {
 
@@ -58,7 +57,7 @@ app.get('/lists', (req, res) => {
 //       .catch(err => {
 //         res.status(500).json({error: 'Could not fetch the document'})
 //       })
-      
+
 //   } else {
 //     res.status(500).json({error: 'Could not fetch the document'})
 //   }

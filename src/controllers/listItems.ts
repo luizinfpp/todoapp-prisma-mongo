@@ -9,21 +9,23 @@ interface ListItemControllerInterface {
   toggleCheck?(input: { db: Db; id: ObjectId }): Promise<ListItemWithId>;
 }
 
+let testReturn: any;
+
 export class ListItemController implements ListItemControllerInterface {
   create(input: { db: Db; text: string; }): Promise<ListItemWithId> {
-    return new Promise((resolve, reject) => {});
+    return new Promise((resolve, reject) => {resolve(testReturn)});
   }
 
   delete(input: { db: Db; id: ObjectId; }): Promise<boolean> {
-    return new Promise((resolve, reject) => {});
+    return new Promise((resolve, reject) => {resolve(testReturn)});
   }
 
   isChecked(input: { db: Db; id: ObjectId; }): Promise<ListItemWithId> {
-    return new Promise((resolve, reject) => {});
+    return new Promise((resolve, reject) => {resolve(testReturn)});
   }
 
   toggleCheck(input: { db: Db; id: ObjectId; }): Promise<ListItemWithId> {
-    return new Promise((resolve, reject) => {});
+    return new Promise((resolve, reject) => {resolve(testReturn)});
   }
     
 }

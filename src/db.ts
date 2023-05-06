@@ -2,19 +2,17 @@ import { Db, MongoClient } from "mongodb";
 
 let dbConnection: Db
 
-function connectToDb(connStr: string, callbackConnect: Function) {
-  MongoClient.connect(connStr)
+export function connectToDb(connStr: string) {
+  return new Promise<Db>((resolve, reject) => {
+    MongoClient.connect(connStr)
     .then(client => {
       dbConnection = client.db();
       console.log("Connected to todo-app database.");
-      callbackConnect();
+      resolve(dbConnection);
     })
     .catch(err => {
       console.log(err);
-      callbackConnect(err);
+      reject("Could not connect to database " + err)
     });
+  })
 }
-
-const getDb = () => dbConnection
-
-export { connectToDb, getDb }

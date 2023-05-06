@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from "vitest";
 import { UserController } from "./users";
-import { connectToDb, getDb } from "../db";
+import { connectToDb } from "../db";
 import { Db } from "mongodb";
 import { ListWithId, UserWithId } from "../types";
 
@@ -18,27 +18,35 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
   let db: Db;
   let connectionStr = `mongodb://${VITE_MONGO_TEST_HOST}:${VITE_MONGO_TEST_PORT}/${VITE_MONGO_TEST_DBNAME}`;
 
-  beforeAll(() => {
-    connectToDb(connectionStr, (err) => {
-      if (!err) {
-        db = getDb();
-      }
+  beforeAll(async () => {
+    await connectToDb(connectionStr).then((dbConn) => {
+      db = dbConn;
+    })
+    .catch((err) => {
+      throw new Error(err);
     });
   });
 
-  test("create user", () => {
-    userController.create({ db: db, userName: name }).then((u) => {
+  test("create user", async () => {
+
+    await userController.create({ db: db, userName: name }).then((u) => {
       user = u;
+      
       expect(u).toBeTruthy();
       expect(u.name).toEqual(name);
-    });
+    }).catch(error => {
+      expect(0).toEqual(1)
+    })
   });
 
-  test("get user by username", () => {
-    userController.get({ db: db, userName: name }).then((u) => {
+  test("get user by username", async () => {
+    
+    await userController.get({ db: db, userName: name }).then((u) => {
       expect(u).toBeTruthy();
       expect(u.name).toEqual(name);
-    });
+    }).catch(error => {
+      expect(0).toEqual(1)
+    })
   });
 
   test("fetch user lists", () => {

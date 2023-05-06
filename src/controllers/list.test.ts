@@ -1,10 +1,10 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { ListController } from "./lists";
-import { connectToDb, getDb } from "../db";
-import { Db, ObjectId } from "mongodb";
+import { connectToDb } from "../db";
+import { Db } from "mongodb";
 import { ListItemWithId, ListWithId, UserWithId } from "../types";
 import { UserController } from "./users";
-import {  ListItemController } from "./listItems"; 
+import { ListItemController } from "./listItems"; 
 
 const isDev = (process.env.VITE_NODE_ENV === "dev");
 
@@ -25,11 +25,12 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   let db: Db;
   let connectionStr = `mongodb://${VITE_MONGO_TEST_HOST}:${VITE_MONGO_TEST_PORT}/${VITE_MONGO_TEST_DBNAME}`;
 
-  beforeAll(() => {
-    connectToDb(connectionStr, (err) => {
-      if (!err) {
-        db = getDb();
-      }
+  beforeAll(async () => {
+    await connectToDb(connectionStr).then((dbConn) => {
+      db = dbConn;
+    })
+    .catch((err) => {
+      throw new Error(err);
     });
 
     userController.create({ db: db, userName: "Mark New User" }).then((u) => {
