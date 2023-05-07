@@ -44,31 +44,39 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   });
 
   test("create list", () => {
+    expect.assertions(2);
+
     listController.create({ db: db, user: user._id, name: name }).then((l) => {
       list = l;
       expect(l).toBeTruthy();
       expect(l.name).toEqual(name);
-    });
+    })
   });
 
   test("get list", () => {
+    expect.assertions(2);
+
     listController.get({ db: db, user: user._id, listName: name }).then((l) => {
       expect(l).toBeTruthy();
       expect(l.name).toEqual(name);
-    });
+    })
   });
 
   test("add item to list", () => {
+    expect.assertions(3);
+
     listController.addItem({ db: db, id: list._id, idListItem: item._id }).then((l) => {
       list = l;
 
       expect(l).toBeTruthy();
       expect(l.items.length).toEqual(1);
       expect(l.items[0].text).toEqual(text);
-    });
+    })
   });
 
   test('list all items in list', () => {
+    expect.assertions(3);
+
     listController.fetchAllItems({ db: db, id: list._id }).then((itemList) => {
       expect(itemList).toBeTruthy();
       expect(itemList.length).toEqual(1);
@@ -80,20 +88,26 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
     listController.removeItem({ db: db, id: list._id, idListItem: list.items[0]._id }).then((l) => {
       expect(l).toBeTruthy();
       expect(l.items.length).toEqual(0);
-    });
+    }).catch(error => {
+      expect(0).toEqual(1)
+    })
   });
 
   test("set new name", () => {
+    expect.assertions(1);
+    
     listController
       .setName({ db: db, id: list._id, newName: newName })
       .then(() => {
         listController.get({ db: db, user: user._id, listName: name }).then((l) => {
           expect(l).toBeFalsy();
         });
-      });
+      })
   });
 
   test("delete user", () => {
+    expect.assertions(2);
+    
     listController
       .delete({ db: db, id: list._id })
       .then((result) => {
@@ -105,7 +119,7 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
           .then((l) => {
             expect(l).toBeFalsy();
           });
-      });
+      })
   });
 
   afterAll(() => {

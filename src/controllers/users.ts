@@ -18,11 +18,11 @@ let testReturn: any;
 export class UserController implements UserControllerInterface {
 
   create(input: { db: Db; userName: string }): Promise<UserWithId> {
-    return new Promise<UserWithId>(async (resolve, reject) => { resolve(testReturn) });
+    return new Promise<UserWithId>(async (resolve, reject) => { reject() });
   }
 
   delete(input: { db: Db; id: ObjectId }): Promise<boolean> {
-    return new Promise<boolean>(async (resolve, reject) => { resolve(testReturn) });
+    return new Promise<boolean>(async (resolve, reject) => { reject() });
   }
 
   get = ({ db, userName }: { db: Db; userName: string }) =>
@@ -39,7 +39,7 @@ export class UserController implements UserControllerInterface {
     });
 
   fetchAllLists(input: { db: Db; id: ObjectId }): Promise<ListWithId[]> {
-    return new Promise<ListWithId[]>(async (resolve, reject) => { resolve(testReturn) });
+    return new Promise<ListWithId[]>(async (resolve, reject) => { reject() });
   }
 
   setName(input: {
@@ -47,6 +47,6 @@ export class UserController implements UserControllerInterface {
     id: ObjectId;
     newName: string;
   }): Promise<UserWithId> {
-    return new Promise<UserWithId>(async (resolve, reject) => { resolve(testReturn) });
+    return new Promise<UserWithId>(async (resolve, reject) => { reject() });
   }
 }

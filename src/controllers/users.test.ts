@@ -28,48 +28,48 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
   });
 
   test("create user", async () => {
+    expect.assertions(2);
 
     await userController.create({ db: db, userName: name }).then((u) => {
       user = u;
       
       expect(u).toBeTruthy();
       expect(u.name).toEqual(name);
-    }).catch(error => {
-      expect(0).toEqual(1)
     })
   });
 
   test("get user by username", async () => {
-    
+    expect.assertions(2);
+
     await userController.get({ db: db, userName: name }).then((u) => {
       expect(u).toBeTruthy();
       expect(u.name).toEqual(name);
-    }).catch(error => {
-      expect(0).toEqual(1)
     })
   });
 
   test("fetch user lists", () => {
+    expect.assertions(1);
+
     userController.fetchAllLists({ db: db, id: user._id }).then(lists => {
         expect(lists).toBeInstanceOf(Array<ListWithId>)        
-    }).catch(error => {
-        expect(error).toEqual("User doesn't have any list created.")
-    })
-
-    
+    })    
   });
 
   test("set new name", () => {
+    expect.assertions(1);
+
     userController
       .setName({ db: db, id: user._id, newName: newName })
       .then(() => {
         userController.get({ db: db, userName: name }).then((u) => {
           expect(u).toBeFalsy();
         });
-      });
+      })
   });
 
   test("delete user", () => {
+    expect.assertions(2);
+
     userController
       .delete({ db: db, id: user._id })
       .then((result) => {
@@ -79,6 +79,6 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
         userController.get({ db: db, userName: name }).then((u) => {
           expect(u).toBeFalsy();
         });
-      });
+      })
   });
 });
