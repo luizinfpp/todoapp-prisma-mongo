@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from "vitest";
 import { connectToDb } from "../db";
-import { Db } from "mongodb";
+import { Db, ObjectId } from "mongodb";
 import { ListItemWithId } from "../types";
 import { ListItemController } from "./listItems";
 
@@ -55,6 +55,15 @@ describe.skipIf(!isDev)(
         })
     });
 
+    test('if trying to know if unexisting item is checked', async () => {
+      expect.assertions(1);
+
+      const result = await liController.isChecked({ db: db, id: new ObjectId(item._id + "a") });
+
+      expect(result).rejects.toThrowError();
+    
+    });
+
     test("toggle item check", () => {
       expect.assertions(2);
 
@@ -66,6 +75,15 @@ describe.skipIf(!isDev)(
         })
     });
 
+    test('if trying toggel check of unexisting item', async () => {
+      expect.assertions(1);
+
+      const result = await liController.toggleCheck({ db: db, id: new ObjectId(item._id + "a") });
+
+      expect(result).rejects.toThrowError();
+    
+    });
+
     test("delete list item", () => {
       expect.assertions(1);
 
@@ -75,5 +93,14 @@ describe.skipIf(!isDev)(
           expect(res).toBeTruthy();
         })
     });
+
+    test('delete unexisting item', async () => {
+      expect.assertions(1);
+
+      const result = await liController.delete({ db: db, id: new ObjectId(item._id + "a") });
+
+      expect(result).rejects.toThrowError();
+    })
+
   }
 );

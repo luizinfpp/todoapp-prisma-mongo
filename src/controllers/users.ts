@@ -25,6 +25,12 @@ export class UserController implements UserControllerInterface {
     return new Promise<boolean>(async (resolve, reject) => { reject() });
   }
 
+  /**
+   * Gets a user by its name.
+   * @param db the database
+   * @param userName the name of the user 
+   * @returns a promise that resolves with the user or reject with an error message
+   */
   get = ({ db, userName }: { db: Db; userName: string }) =>
     new Promise<UserWithId>(async (resolve, reject) => {
       db.collection<User>("users")
