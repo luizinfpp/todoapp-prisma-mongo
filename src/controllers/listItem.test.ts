@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from "vitest";
+import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { connectToDb } from "../db";
 import { Db, ObjectId } from "mongodb";
 import { ListItemWithId } from "../types";
@@ -19,6 +19,7 @@ describe.skipIf(!isDev)(
 
     const liController = new ListItemController();
     let item: ListItemWithId;
+    let itemId : ObjectId;
     const text = "new item";
 
     beforeAll(async () => {
@@ -37,12 +38,22 @@ describe.skipIf(!isDev)(
       liController
         .create({ db: db, text: text })
         .then((li) => {
-          item = li;
-          
           expect(li).toBeTruthy();
-          expect(li.text).toEqual(text);
+          expect(li).toBeInstanceOf(ObjectId);
         })
     });
+
+    test("get list item", () => {
+      expect.assertions(2);
+
+      liController
+        .get({ db: db, id: item._id })
+        .then((li) => {
+          expect(li).toBeTruthy();
+          expect(li.text).toEqual(text)
+        })
+    
+    })
 
     test("if item is checked", () => {
       expect.assertions(2);
@@ -75,7 +86,7 @@ describe.skipIf(!isDev)(
         })
     });
 
-    test('if trying toggel check of unexisting item', async () => {
+    test('if trying toggle check of unexisting item', async () => {
       expect.assertions(1);
 
       const result = await liController.toggleCheck({ db: db, id: new ObjectId(item._id + "a") });
@@ -87,20 +98,17 @@ describe.skipIf(!isDev)(
     test("delete list item", () => {
       expect.assertions(1);
 
-      liController
-        .delete({ db: db, id: item._id })
-        .then((res) => {
-          expect(res).toBeTruthy();
-        })
+      expect(liController.delete({ db: db, id: item._id })).resolves.toBeUndefined();
     });
 
-    test('delete unexisting item', async () => {
+    test('delete unexisting item', () => {
       expect.assertions(1);
 
-      const result = await liController.delete({ db: db, id: new ObjectId(item._id + "a") });
-
-      expect(result).rejects.toThrowError();
+      expect(liController.delete({ db: db, id: new ObjectId(item._id + "a") })).rejects.toThrowError();
     })
 
+    afterAll(() => {
+      liController.delete({ db: db, id: item._id }).catch(() => {})
+    })
   }
 );

@@ -15,7 +15,7 @@ const ListItem = z.object({
   checked: z.boolean(),
 });
 
-//type ListItem = z.infer<typeof ListItem>
+type ListItem = z.infer<typeof ListItem>
 type ListItemWithId = z.infer<typeof ListItem>;
 
 const User = z.object({
@@ -34,4 +34,4 @@ const List = z.object({
 type List = z.infer<typeof List>;
 type ListWithId = WithId<List>;
 
-export { Error, WithError, User, UserWithId, ListWithId, ListItemWithId }
+export { Error, WithError, User, UserWithId, List, ListWithId, ListItem, ListItemWithId }

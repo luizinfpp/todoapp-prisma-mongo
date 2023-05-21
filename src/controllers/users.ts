@@ -1,9 +1,9 @@
 import { User, UserWithId, ListWithId } from "../types";
-import { Db, ObjectId } from "mongodb";
+import { Db, InsertOneResult, ObjectId } from "mongodb";
 
 interface UserControllerInterface {
-  create?(input: { db: Db; userName: string }): Promise<UserWithId>;
-  delete?(input: { db: Db; id: ObjectId }): Promise<boolean>;
+  create(input: { db: Db; userName: string }): Promise<ObjectId>;
+  delete(input: { db: Db; id: ObjectId }): Promise<void>;
   get(input: { db: Db; userName: string }): Promise<UserWithId>;
   fetchAllLists?(input: { db: Db; id: ObjectId }): Promise<ListWithId[]>;
   setName?(input: {
@@ -17,12 +17,48 @@ let testReturn: any;
 
 export class UserController implements UserControllerInterface {
 
-  create(input: { db: Db; userName: string }): Promise<UserWithId> {
-    return new Promise<UserWithId>(async (resolve, reject) => { reject() });
+  /**
+   * Creates a new user in the database.
+   * @param db the database
+   * @param userName the name of the user to be created
+   * @returns the new user id
+   */
+  create(input: { db: Db; userName: string }): Promise<ObjectId> {
+    return new Promise<ObjectId>(async (resolve, reject) => {
+      input.db.collection<User>("users")
+        .insertOne({ name: input.userName })
+        .then((result) => {
+          if (result) resolve(result.insertedId);
+          else reject("There was an error creating the user.");
+        })
+        .catch((err) => {
+          reject("Database error. Could not insert user. " + err);
+        });
+    });
   }
 
-  delete(input: { db: Db; id: ObjectId }): Promise<boolean> {
-    return new Promise<boolean>(async (resolve, reject) => { reject() });
+  /**
+   * This function deletes a user from a database based on their ID.
+   * @param db The database
+   * @param id The id of the user to be deleted
+   * @returns A Promise that resolves to void (i.e., nothing) if the user with the given id is
+   * successfully deleted from the "users" collection in the input database, or rejects with an error
+   * message if there is a problem with the deletion process.
+   */
+  delete(input: { db: Db; id: ObjectId }): Promise<void> {
+    const query = { _id: input.id }
+    
+    return new Promise<void>(async (resolve, reject) => {
+      input.db.collection<User>("users")
+        .deleteOne(query)
+        .then((result) => {
+          if (result.deletedCount > 0) resolve();
+          else reject("No user was found with the given id.");
+        })
+        .catch((err) => {
+          reject("Database error. Could not insert user. " + err);
+        });
+    });
   }
 
   /**

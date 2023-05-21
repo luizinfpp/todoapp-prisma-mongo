@@ -32,18 +32,17 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
     expect.assertions(2);
 
     await userController.create({ db: db, userName: name }).then((u) => {
-      user = u;
 
       expect(u).toBeTruthy();
-      expect(u.name).toEqual(name);
+      expect(u).toBeInstanceOf(ObjectId);
     });
   });
 
-  test("create user with same name", async () => {
+  test("create user with same name", () => {
     expect.assertions(1);
 
     expect(
-      await userController.create({ db: db, userName: name })
+      userController.create({ db: db, userName: name })
     ).rejects.toThrowError();
   });
 
@@ -51,16 +50,17 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
     expect.assertions(2);
 
     await userController.get({ db: db, userName: name }).then((u) => {
+      user = u;
       expect(u).toBeTruthy();
       expect(u.name).toEqual(name);
     });
   });
 
-  test("get user with not found username", async () => {
+  test("get user with not found username", () => {
     expect.assertions(1);
 
     expect(
-      await userController.get({ db: db, userName: newName })
+      userController.get({ db: db, userName: newName })
     ).rejects.toThrowError();
   });
 
@@ -84,11 +84,11 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
       });
   });
 
-  test("set name with user not found", async () => {
+  test("set name with user not found", () => {
     expect.assertions(1);
 
     expect(
-      await userController.setName({
+      userController.setName({
         db: db,
         id: new ObjectId(user._id + "a"),
         newName: newName,
@@ -99,37 +99,31 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
   test("set name with already existing name", async () => {
     expect.assertions(1);
 
-    userHelper = await userController.create({ db: db, userName: name });
-
+    await userController.create({ db: db, userName: name });
+    userHelper = await userController.get({ db: db, userName: name  });
+    
     expect(
-      await userController.setName({ db: db, id: user._id, newName: name })
+      userController.setName({ db: db, id: user._id, newName: name })
     ).rejects.toThrowError();
   });
 
   test("delete user", () => {
     expect.assertions(2);
-
-    userController
-      .delete({ db: db, id: user._id })
-      .then((result) => {
-        expect(result).toBeTruthy();
-      })
-      .then(() => {
-        userController.get({ db: db, userName: name }).then((u) => {
-          expect(u).toBeFalsy();
-        });
-      });
+    
+    expect(userController.delete({ db: db, id: user._id })).resolves.toBeUndefined();
+    expect(userController.get({ db: db, userName: name })).rejects.toThrowError();
   });
 
-  test("delete user not found", async () => {
+  test("delete user not found", () => {
     expect.assertions(1);
 
     expect(
-      await userController.delete({ db: db, id: user._id })
+      userController.delete({ db: db, id: user._id })
     ).rejects.toThrowError();
   });
 
   afterAll(() => {
-    userController.delete({ db: db, id: userHelper._id });
+    userController.delete({ db: db, id: userHelper._id }).catch(() => {});
+    userController.delete({ db: db, id: user._id }).catch(() => {});
   });
 });
