@@ -40,7 +40,7 @@ export class ListController implements ListControllerInterface {
     return new Promise((resolve, reject) => {
       input.db
         .collection<List>("list")
-        .insertOne({ name: input.name, user: input.user })
+        .insertOne({ name: input.name, user: input.user, items: [] })
         .then((result) => {
           if (result) resolve(result.insertedId);
           else reject("There was an error creating the list.");
