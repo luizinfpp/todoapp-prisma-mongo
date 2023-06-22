@@ -32,23 +32,25 @@ describe.skipIf(!isDev)(
         });
     });
 
-    test("create list item", () => {
+    test("create list item", async () => {
       expect.assertions(2);
 
-      liController
+      await liController
         .create({ db: db, text: text })
         .then((li) => {
+          itemId = li;
           expect(li).toBeTruthy();
           expect(li).toBeInstanceOf(ObjectId);
         })
     });
 
-    test("get list item", () => {
+    test("get list item", async () => {
       expect.assertions(2);
 
-      liController
-        .get({ db: db, id: item._id })
+      await liController
+        .get({ db: db, id: itemId })
         .then((li) => {
+          item = li;
           expect(li).toBeTruthy();
           expect(li.text).toEqual(text)
         })
@@ -96,7 +98,7 @@ describe.skipIf(!isDev)(
     });
 
     test("delete list item", () => {
-      expect.assertions(1);
+      expect.assertions(1);      
 
       expect(liController.delete({ db: db, id: item._id })).resolves.toBeUndefined();
     });

@@ -1,4 +1,4 @@
-import { User, UserWithId, ListWithId } from "../types";
+import { User, UserWithId, ListWithId, List } from "../types";
 import { Db, InsertOneResult, ObjectId } from "mongodb";
 
 interface UserControllerInterface {
@@ -10,7 +10,7 @@ interface UserControllerInterface {
     db: Db;
     id: ObjectId;
     newName: string;
-  }): Promise<UserWithId>;
+  }): Promise<void>;
 }
 
 let testReturn: any;
@@ -80,15 +80,42 @@ export class UserController implements UserControllerInterface {
         });
     });
 
+  /**
+   * Fetches all lists for a user.
+   * @param db the database
+   * @param id the id of the user 
+   * @returns a promise that resolves with the lists or rejects with an error message
+   */
   fetchAllLists(input: { db: Db; id: ObjectId }): Promise<ListWithId[]> {
-    return new Promise<ListWithId[]>(async (resolve, reject) => { reject() });
+    let lists : ListWithId[] = [];
+
+    return new Promise<ListWithId[]>(async (resolve, reject) => { 
+      input.db.collection<List>("lists").find({ user: input.id }).forEach((list) => {
+        lists.push(list);
+      }).then(() => {
+        resolve(lists);  
+      }).catch((err) => { 
+        reject("Database error. Could not fetch lists. " + err);
+      })
+    });
   }
 
+  // TODO FIX not working
   setName(input: {
     db: Db;
     id: ObjectId;
     newName: string;
-  }): Promise<UserWithId> {
-    return new Promise<UserWithId>(async (resolve, reject) => { reject() });
+  }): Promise<void> {
+    return new Promise<void>(async (resolve, reject) => { 
+      input.db.collection<User>("users")
+        .updateOne({ _id: input.id }, { $set: { name: input.newName } })
+        .then((result) => {
+          if (result.modifiedCount > 0) resolve();
+          else reject("No user was found with the given id.");
+        })
+        .catch((err) => {
+          reject("Database error. Could not update user. " + err);
+        });
+     });
   }
 }

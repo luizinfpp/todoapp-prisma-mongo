@@ -64,36 +64,28 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
     ).rejects.toThrowError();
   });
 
-  test("fetch user lists", () => {
+  test("fetch user lists", async () => {
     expect.assertions(1);
 
-    userController.fetchAllLists({ db: db, id: user._id }).then((lists) => {
+    await userController.fetchAllLists({ db: db, id: user._id }).then((lists) => {
       expect(lists).toBeInstanceOf(Array<ListWithId>);
     });
   });
 
-  test("set new name", () => {
+  test("set new name", async () => {
     expect.assertions(1);
 
-    userController
+    await userController
       .setName({ db: db, id: user._id, newName: newName })
-      .then(() => {
-        userController.get({ db: db, userName: name }).then((u) => {
-          expect(u).toBeFalsy();
-        });
-      });
+      
+    await expect(userController.get({ db: db, userName: name })).rejects.toThrowError();        
+      
   });
 
-  test("set name with user not found", () => {
+  test("set name with user not found", async () => {
     expect.assertions(1);
 
-    expect(
-      userController.setName({
-        db: db,
-        id: new ObjectId(user._id + "a"),
-        newName: newName,
-      })
-    ).rejects.toThrowError();
+    await expect(userController.setName({ db: db, id: new ObjectId(), newName: newName })).rejects.toThrowError();
   });
 
   test("set name with already existing name", async () => {
@@ -107,11 +99,11 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
     ).rejects.toThrowError();
   });
 
-  test("delete user", () => {
+  test("delete user", async () => {
     expect.assertions(2);
     
-    expect(userController.delete({ db: db, id: user._id })).resolves.toBeUndefined();
-    expect(userController.get({ db: db, userName: name })).rejects.toThrowError();
+    await expect(userController.delete({ db: db, id: user._id })).resolves.toBeUndefined();
+    await expect(userController.get({ db: db, userName: newName })).rejects.toThrowError();
   });
 
   test("delete user not found", () => {

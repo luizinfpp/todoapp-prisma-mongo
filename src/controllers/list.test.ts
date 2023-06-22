@@ -35,11 +35,11 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
         throw new Error(err);
       });
 
-    userController.create({ db: db, userName: "Mark New User" }).then((u) => {
+    await userController.create({ db: db, userName: "Mark New User" }).then((u) => {
       userId = u;
     });
 
-    itemController.create({ db: db, text: text }).then((i) => {
+    await itemController.create({ db: db, text: text }).then((i) => {
       itemController
         .get({ db: db, id: i })
         .then((response) => (item = response));
@@ -49,6 +49,8 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   test("create list", async () => {
     expect.assertions(2);
 
+    console.log(userId)
+
     await listController
       .create({ db: db, user: userId, name: name })
       .then((l) => {
@@ -57,10 +59,10 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
       });
   });
 
-  test("get list", () => {
+  test("get list", async () => {
     expect.assertions(2);
 
-    listController.get({ db: db, user: userId, listName: name }).then((l) => {
+    await listController.get({ db: db, user: userId, listName: name }).then((l) => {
       list = l;
 
       expect(l).toBeTruthy();

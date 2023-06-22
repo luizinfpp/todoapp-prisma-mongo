@@ -39,7 +39,7 @@ export class ListController implements ListControllerInterface {
   create(input: { db: Db; user: ObjectId; name: string }): Promise<ObjectId> {
     return new Promise((resolve, reject) => {
       input.db
-        .collection<List>("list")
+        .collection<List>("lists")
         .insertOne({ name: input.name, user: input.user, items: [] })
         .then((result) => {
           if (result) resolve(result.insertedId);
@@ -59,7 +59,7 @@ export class ListController implements ListControllerInterface {
    */
   delete(input: { db: Db; id: ObjectId }): Promise<void> {
     return new Promise((resolve, reject) => {
-      input.db.collection("list").deleteOne({ _id: input.id }).then((result) => {
+      input.db.collection("lists").deleteOne({ _id: input.id }).then((result) => {
         if (result.deletedCount > 0) resolve();
         else reject("No list was found with the given id.");
       })
@@ -81,9 +81,10 @@ export class ListController implements ListControllerInterface {
     listName: string;
   }): Promise<ListWithId> {
     return new Promise((resolve, reject) => {
-      input.db.collection<List>("list")
+      input.db.collection<List>("lists")
         .findOne({ name: input.listName, user: input.user })
         .then((li) => {
+          console.log(li, input);
           if (li) resolve(li);
           else reject("There is no list with the given name.");
         })
