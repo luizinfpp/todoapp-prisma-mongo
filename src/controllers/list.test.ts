@@ -35,9 +35,11 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
         throw new Error(err);
       });
 
-    await userController.create({ db: db, userName: "Mark New User" }).then((u) => {
-      userId = u;
-    });
+    await userController
+      .create({ db: db, userName: "Mark New User" })
+      .then((u) => {
+        userId = u;
+      });
 
     await itemController.create({ db: db, text: text }).then((i) => {
       itemController
@@ -49,7 +51,7 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   test("create list", async () => {
     expect.assertions(2);
 
-    console.log(userId)
+    console.log(userId);
 
     await listController
       .create({ db: db, user: userId, name: name })
@@ -62,45 +64,46 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   test("get list", async () => {
     expect.assertions(2);
 
-    await listController.get({ db: db, user: userId, listName: name }).then((l) => {
-      list = l;
+    await listController
+      .get({ db: db, user: userId, listName: name })
+      .then((l) => {
+        list = l;
 
-      expect(l).toBeTruthy();
-      expect(l.name).toEqual(name);
-    });
+        expect(l).toBeTruthy();
+        expect(l.name).toEqual(name);
+      });
   });
 
   test("get list with not found listname", async () => {
     expect.assertions(1);
 
-    expect(
-      await listController.get({ db: db, user: userId, listName: newName })
+    await expect(
+      listController.get({ db: db, user: userId, listName: newName })
     ).rejects.toThrowError();
   });
 
-  test("add item to list", () => {
+  test("add item to list", async () => {
     expect.assertions(3);
 
-    listController
-      .addItem({ db: db, id: list._id, idListItem: item._id })
-      .then((l) => {
-        list = l;
+    await expect(listController.addItem({ db: db, id: list._id, idListItem: item._id })).resolves.toBeUndefined()
+    
+    await listController.get({ db: db, user: userId, listName: name }).then( l => {
+      list = l;
+      expect(l.items.length).toEqual(1);
+    })
 
-        expect(l).toBeTruthy();
-        expect(l.items.length).toEqual(1);
-        itemController
-          .get({ db: db, id: l.items[0] })
-          .then((i) => expect(i.text).toEqual(text));
-      });
+    await itemController.get({ db: db, id: list.items[0] }).then( i => {
+      expect(i.text).toEqual(text);
+    })
   });
 
   test("add item with not found list", async () => {
     expect.assertions(1);
 
-    expect(
-      await listController.addItem({
+    await expect(
+      listController.addItem({
         db: db,
-        id: new ObjectId(list._id + "a"),
+        id: new ObjectId(),
         idListItem: item._id,
       })
     ).rejects.toThrowError();
@@ -109,19 +112,19 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   test("add unexisting item to list", async () => {
     expect.assertions(1);
 
-    expect(
-      await listController.addItem({
+    await expect(
+      listController.addItem({
         db: db,
         id: list._id,
-        idListItem: new ObjectId(item._id + "a"),
+        idListItem: new ObjectId(),
       })
     ).rejects.toThrowError();
   });
 
-  test("list all items in list", () => {
+  test("list all items in list", async () => {
     expect.assertions(3);
 
-    listController.fetchAllItems({ db: db, id: list._id }).then((itemList) => {
+    await listController.fetchAllItems({ db: db, id: list._id }).then((itemList) => {
       expect(itemList).toBeTruthy();
       expect(itemList.length).toEqual(1);
       expect(itemList[0].text).toEqual(text);
@@ -131,33 +134,33 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   test("list all items with not found list", async () => {
     expect.assertions(1);
 
-    expect(
-      await listController.fetchAllItems({
+    await expect(
+      listController.fetchAllItems({
         db: db,
-        id: new ObjectId(list._id + "a"),
+        id: new ObjectId(),
       })
     ).rejects.toThrowError();
   });
 
-  test("remove item from list", () => {
-    listController
-      .removeItem({ db: db, id: list._id, idListItem: list.items[0] })
-      .then((l) => {
-        expect(l).toBeTruthy();
-        expect(l.items.length).toEqual(0);
+  test("remove item from list", async () => {
+    expect.assertions(1);
+
+    await expect(
+      listController.removeItem({
+        db: db,
+        id: list._id,
+        idListItem: list.items[0],
       })
-      .catch((error) => {
-        expect(0).toEqual(1);
-      });
+    ).resolves.toBeUndefined();
   });
 
   test("remove item of not found list", async () => {
     expect.assertions(1);
 
-    expect(
-      await listController.removeItem({
+    await expect(
+      listController.removeItem({
         db: db,
-        id: new ObjectId(list._id + "a"),
+        id: new ObjectId(),
         idListItem: list.items[0],
       })
     ).rejects.toThrowError();
@@ -166,36 +169,34 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   test("remove unexisting item from list", async () => {
     expect.assertions(1);
 
-    expect(
+    await expect(
       listController.removeItem({
         db: db,
         id: list._id,
-        idListItem: new ObjectId(list.items[0] + "a"),
+        idListItem: new ObjectId(),
       })
     ).rejects.toThrowError();
   });
 
-  test("set new name", () => {
-    expect.assertions(1);
+  test("set new name", async () => {
+    expect.assertions(2);
 
-    listController
-      .setName({ db: db, id: list._id, newName: newName })
-      .then(() => {
-        listController
-          .get({ db: db, user: userId, listName: name })
-          .then((l) => {
-            expect(l).toBeFalsy();
-          });
-      });
+    await expect(
+      listController.setName({ db: db, id: list._id, newName: newName })
+    ).resolves.toBeUndefined();
+
+    await expect(
+      listController.get({ db: db, user: userId, listName: name })
+    ).rejects.toThrowError();
   });
 
-  test("set name with not found list", () => {
+  test("set name with not found list", async () => {
     expect.assertions(1);
 
-    expect(
+    await expect(
       listController.setName({
         db: db,
-        id: new ObjectId(list._id + "a"),
+        id: new ObjectId(),
         newName: newName,
       })
     ).rejects.toThrowError();
@@ -215,10 +216,10 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
   test("delete not found list", async () => {
     expect.assertions(1);
 
-    expect(
+    await expect(
       listController.delete({
         db: db,
-        id: new ObjectId(list._id + "a"),
+        id: new ObjectId(),
       })
     ).rejects.toThrowError();
   });

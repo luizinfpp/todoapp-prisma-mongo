@@ -1,4 +1,4 @@
-import { ListWithId, ListItemWithId, List } from "../types";
+import { ListWithId, ListItemWithId, List, ListItem } from "../types";
 import { Db, ObjectId } from "mongodb";
 
 interface ListControllerInterface {
@@ -9,27 +9,22 @@ interface ListControllerInterface {
     user: ObjectId;
     listName: string;
   }): Promise<ListWithId>;
-  setName?(input: {
-    db: Db;
-    id: ObjectId;
-    newName: string;
-  }): Promise<ListWithId>;
+  setName?(input: { db: Db; id: ObjectId; newName: string }): Promise<void>;
 
   addItem?(input: {
     db: Db;
     id: ObjectId;
     idListItem: ObjectId;
-  }): Promise<ListWithId>;
+  }): Promise<void>;
   fetchAllItems?(input: { db: Db; id: ObjectId }): Promise<ListItemWithId[]>;
   removeItem?(input: {
     db: Db;
     id: ObjectId;
     idListItem: ObjectId;
-  }): Promise<ListWithId>;
+  }): Promise<void>;
 }
 
 export class ListController implements ListControllerInterface {
-
   /**Create a new list.
    * @param input.db The database connection.
    * @param input.user The user's id.
@@ -59,13 +54,16 @@ export class ListController implements ListControllerInterface {
    */
   delete(input: { db: Db; id: ObjectId }): Promise<void> {
     return new Promise((resolve, reject) => {
-      input.db.collection("lists").deleteOne({ _id: input.id }).then((result) => {
-        if (result.deletedCount > 0) resolve();
-        else reject("No list was found with the given id.");
-      })
-      .catch((err) =>
-        reject("Database error. Could not delete list. " + err)
-      );
+      input.db
+        .collection("lists")
+        .deleteOne({ _id: input.id })
+        .then((result) => {
+          if (result.deletedCount > 0) resolve();
+          else reject("No list was found with the given id.");
+        })
+        .catch((err) =>
+          reject("Database error. Could not delete list. " + err)
+        );
     });
   }
 
@@ -74,17 +72,17 @@ export class ListController implements ListControllerInterface {
    * @param input.user The user's id.
    * @param input.listName The name of the list.
    * @returns The list.
-    */
+   */
   get(input: {
     db: Db;
     user: ObjectId;
     listName: string;
   }): Promise<ListWithId> {
     return new Promise((resolve, reject) => {
-      input.db.collection<List>("lists")
+      input.db
+        .collection<List>("lists")
         .findOne({ name: input.listName, user: input.user })
         .then((li) => {
-          console.log(li, input);
           if (li) resolve(li);
           else reject("There is no list with the given name.");
         })
@@ -94,31 +92,93 @@ export class ListController implements ListControllerInterface {
     });
   }
 
-  setName(input: {
-    db: Db;
-    id: ObjectId;
-    newName: string;
-  }): Promise<ListWithId> {
-    return new Promise((resolve, reject) => {reject()});
+  setName(input: { db: Db; id: ObjectId; newName: string }): Promise<void> {
+    return new Promise((resolve, reject) => {
+      input.db
+        .collection<List>("lists")
+        .updateOne({ _id: input.id }, { $set: { name: input.newName } })
+        .then((result) => {
+          if (result.modifiedCount > 0) resolve();
+          else reject("No list was found with the given id.");
+        })
+        .catch((err) =>
+          reject("Database error. Could not update list. " + err)
+        );
+    });
   }
 
   addItem(input: {
     db: Db;
     id: ObjectId;
     idListItem: ObjectId;
-  }): Promise<ListWithId> {
-    return new Promise((resolve, reject) => {reject()});
+  }): Promise<void> {
+    return new Promise((resolve, reject) => {
+      input.db
+        .collection<ListItem>("list-items")
+        .findOne({ _id: input.idListItem })
+        .then((li) => {
+          if (li) {
+            input.db
+              .collection<List>("lists")
+              .updateOne(
+                { _id: input.id },
+                { $push: { items: input.idListItem } }
+              )
+              .then((result) => {
+                if (result.modifiedCount > 0) resolve();
+                else reject("No list was found with the given id.");
+              })
+              .catch((err) =>
+                reject("Database error. Could not update list. " + err)
+              );
+          } else reject("There is no list item with the given id.");
+        })
+        .catch((err) =>
+          reject("Database error. Could not update list. " + err)
+        );
+    });
   }
 
   fetchAllItems(input: { db: Db; id: ObjectId }): Promise<ListItemWithId[]> {
-    return new Promise((resolve, reject) => {reject()});
+    return new Promise((resolve, reject) => {
+      input.db
+        .collection<List>("lists")
+        .findOne({ _id: input.id })
+        .then((list) => {
+          if (list) {
+            input.db
+              .collection<ListItem>("list-items")
+              .find({ _id: { $in: list.items } })
+              .toArray()
+              .then((items) => {
+                if (items) resolve(items);
+                else reject("There is no list item with the given id.");
+              })
+              .catch((err) =>
+                reject("Database error. Could not update list. " + err)
+              );
+          } else reject("There is no list item with the given id.");
+        })
+        .catch((err) =>
+          reject("Database error. Could not find list. " + err)
+        );
+    });
   }
 
   removeItem(input: {
     db: Db;
     id: ObjectId;
     idListItem: ObjectId;
-  }): Promise<ListWithId> {
-    return new Promise((resolve, reject) => {reject()});
+  }): Promise<void> {
+    return new Promise((resolve, reject) => {
+      
+      input.db.collection<List>("lists").updateOne({ _id: input.id }, { $pull: { items: input.idListItem } }).then((result) => {
+        if (result.modifiedCount > 0) resolve();
+        else reject("No list was found with the given id.");
+      }
+      ).catch((err) =>
+        reject("Database error. Could not update list. " + err)
+      );
+    });
   }
 }
