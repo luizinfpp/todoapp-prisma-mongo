@@ -19,7 +19,7 @@ describe.skipIf(!isDev)(
 
     const liController = new ListItemController();
     let item: ListItemWithId;
-    let itemId : ObjectId;
+    let itemId: ObjectId;
     const text = "new item";
 
     beforeAll(async () => {
@@ -35,82 +35,75 @@ describe.skipIf(!isDev)(
     test("create list item", async () => {
       expect.assertions(2);
 
-      await liController
-        .create({ db: db, text: text })
-        .then((li) => {
-          itemId = li;
-          expect(li).toBeTruthy();
-          expect(li).toBeInstanceOf(ObjectId);
-        })
+      await liController.create({ db: db, text: text }).then((li) => {
+        itemId = li;
+        expect(li).toBeTruthy();
+        expect(li).toBeInstanceOf(ObjectId);
+      });
     });
 
     test("get list item", async () => {
       expect.assertions(2);
 
+      await liController.get({ db: db, id: itemId }).then((li) => {
+        item = li;
+        expect(li).toBeTruthy();
+        expect(li.text).toEqual(text);
+      });
+    });
+
+    test("if item is checked", async () => {
+      expect.assertions(1);
+
       await liController
-        .get({ db: db, id: itemId })
-        .then((li) => {
-          item = li;
-          expect(li).toBeTruthy();
-          expect(li.text).toEqual(text)
-        })
-    
-    })
-
-    test("if item is checked", () => {
-      expect.assertions(2);
-
-      liController
         .isChecked({ db: db, id: item._id })
-        .then((li) => {
-          expect(li).toBeTruthy();
-          expect(li.checked).toBeFalsy();
-        })
+        .then((liChecked) => {
+          expect(liChecked).toBeFalsy();
+        });
     });
 
-    test('if trying to know if unexisting item is checked', async () => {
+    test("if trying to know if unexisting item is checked", async () => {
       expect.assertions(1);
 
-      const result = await liController.isChecked({ db: db, id: new ObjectId(item._id + "a") });
-
-      expect(result).rejects.toThrowError();
-    
+      await expect(
+        liController.isChecked({ db: db, id: new ObjectId() })
+      ).rejects.toThrowError();
     });
 
-    test("toggle item check", () => {
+    test("toggle item check", async () => {
       expect.assertions(2);
 
-      liController
-        .toggleCheck({ db: db, id: item._id })
-        .then((li) => {
-          expect(li).toBeTruthy();
-          expect(li.checked).toBeTruthy();
-        })
+      await expect(
+        liController.toggleCheck({ db: db, id: item._id })
+      ).resolves.toBeUndefined();
+      
+      await liController.isChecked({ db: db, id: item._id }).then((result) => {
+        expect(result).toBeTruthy();
+      });
     });
 
-    test('if trying toggle check of unexisting item', async () => {
+    test("if trying toggle check of unexisting item", async () => {
       expect.assertions(1);
 
-      const result = await liController.toggleCheck({ db: db, id: new ObjectId(item._id + "a") });
-
-      expect(result).rejects.toThrowError();
-    
+      await expect(liController.toggleCheck({db: db, id: new ObjectId() })).rejects.toThrowError();
     });
 
     test("delete list item", () => {
-      expect.assertions(1);      
-
-      expect(liController.delete({ db: db, id: item._id })).resolves.toBeUndefined();
-    });
-
-    test('delete unexisting item', () => {
       expect.assertions(1);
 
-      expect(liController.delete({ db: db, id: new ObjectId(item._id + "a") })).rejects.toThrowError();
-    })
+      expect(
+        liController.delete({ db: db, id: item._id })
+      ).resolves.toBeUndefined();
+    });
+
+    test("delete unexisting item", async () => {
+      expect.assertions(1);
+
+      await expect(liController.delete({ db: db, id: new ObjectId() })).rejects.toThrowError();
+    });
 
     afterAll(() => {
-      liController.delete({ db: db, id: item._id }).catch(() => {})
-    })
+      liController.delete({ db: db, id: item._id }).catch(() => {});
+    });
   }
 );

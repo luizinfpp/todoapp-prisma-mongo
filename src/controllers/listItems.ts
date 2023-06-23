@@ -6,8 +6,8 @@ interface ListItemControllerInterface {
   get?(input: { db: Db; id: ObjectId }): Promise<ListItemWithId>;
   delete?(input: { db: Db; id: ObjectId }): Promise<void>;
 
-  isChecked?(input: { db: Db; id: ObjectId }): Promise<ListItemWithId>;
-  toggleCheck?(input: { db: Db; id: ObjectId }): Promise<ListItemWithId>;
+  isChecked?(input: { db: Db; id: ObjectId }): Promise<boolean>;
+  toggleCheck?(input: { db: Db; id: ObjectId }): Promise<void>;
 }
 
 export class ListItemController implements ListItemControllerInterface {
@@ -75,15 +75,34 @@ export class ListItemController implements ListItemControllerInterface {
     });
   }  
 
-  isChecked(input: { db: Db; id: ObjectId }): Promise<ListItemWithId> {
+  isChecked(input: { db: Db; id: ObjectId }): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      reject();
+      input.db.collection("list-items").findOne({ _id: input.id }).then((result) => {
+        if(result != null) resolve(result.checked)
+        else reject("No list item was found with the given id.")
+      })
+      .catch((err) =>
+        reject("Database error. Could not delete item. " + err)
+      );
     });
   }
 
-  toggleCheck(input: { db: Db; id: ObjectId }): Promise<ListItemWithId> {
+  toggleCheck(input: { db: Db; id: ObjectId }): Promise<void> {
     return new Promise((resolve, reject) => {
-      reject();
+      
+      input.db.collection("list-items").findOne({ _id: input.id }).then((result) => {
+        if(result != null) {
+          input.db.collection("list-items").updateOne({ _id: input.id }, { $set: { checked: !result.checked } }).then((updateResult) => {
+            if(updateResult.modifiedCount > 0) resolve();
+            else reject("No list item was found with the given id.")
+          })
+        }
+        else reject("No list item was found with the given id.")
+      })
+      .catch((err) =>
+        reject("Database error. Could not update item. " + err)
+      );
+      
     });
   }
 }
