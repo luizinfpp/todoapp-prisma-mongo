@@ -9,8 +9,8 @@ interface ListControllerInterface {
     user: ObjectId;
     listName: string;
   }): Promise<ListWithId>;
+  getAll?(input: { db: Db }): Promise<ListWithId[]>;
   setName?(input: { db: Db; id: ObjectId; newName: string }): Promise<void>;
-
   addItem?(input: {
     db: Db;
     id: ObjectId;
@@ -85,6 +85,22 @@ export class ListController implements ListControllerInterface {
         .then((li) => {
           if (li) resolve(li);
           else reject("There is no list with the given name.");
+        })
+        .catch((err) => {
+          reject("Database error. Could not fetch lists. " + err);
+        });
+    });
+  }
+
+  getAll(input: { db: Db; }): Promise<ListWithId[]> {
+    return new Promise((resolve, reject) => {
+      input.db
+        .collection<List>("lists")
+        .find({})
+        .toArray()
+        .then((lists) => {
+          if (lists) resolve(lists);
+          else reject("No lists were found.");
         })
         .catch((err) => {
           reject("Database error. Could not fetch lists. " + err);

@@ -5,6 +5,7 @@ interface UserControllerInterface {
   create(input: { db: Db; userName: string }): Promise<ObjectId>;
   delete(input: { db: Db; id: ObjectId }): Promise<void>;
   get(input: { db: Db; userName: string }): Promise<UserWithId>;
+  getAll(input: { db: Db }): Promise<UserWithId[]>;
   fetchAllLists?(input: { db: Db; id: ObjectId }): Promise<ListWithId[]>;
   setName?(input: {
     db: Db;
@@ -79,6 +80,23 @@ export class UserController implements UserControllerInterface {
           reject("Database error. Could not fetch users. " + err);
         });
     });
+
+  getAll(input: { db: Db; }): Promise<UserWithId[]> {
+    return new Promise((resolve, reject) => {
+      input.db
+        .collection<User>("users")
+        .find({})
+        .toArray()
+        .then((users) => {
+          if (users) resolve(users);
+          else reject("No users were found.");
+        })
+        .catch((err) => {
+          reject("Database error. Could not fetch users. " + err);
+        });
+    });
+      
+  }
 
   /**
    * Fetches all lists for a user.

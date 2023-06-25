@@ -38,6 +38,17 @@ describe.skipIf(!isDev)("user controller unit tests - with test db", () => {
     });
   });
 
+  test("get all users", async () => {
+    expect.assertions(2);
+
+    await userController
+      .getAll({ db: db })
+      .then((u) => {
+        expect(u).toBeInstanceOf(Array<UserWithId>);
+        expect(u.length).toBeGreaterThan(0);
+      });
+  });
+
   test("create user with same name", () => {
     expect.assertions(1);
 

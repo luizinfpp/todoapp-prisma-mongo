@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { ListController } from "./lists";
 import { connectToDb } from "../db";
 import { Db, ObjectId } from "mongodb";
-import { ListItemWithId, ListWithId, UserWithId } from "../types";
+import { ListItemWithId, ListWithId } from "../types";
 import { UserController } from "./users";
 import { ListItemController } from "./listItems";
 
@@ -58,6 +58,17 @@ describe.skipIf(!isDev)("list controller unit tests - with test db", () => {
       .then((l) => {
         expect(l).toBeTruthy();
         expect(l).toBeInstanceOf(ObjectId);
+      });
+  });
+
+  test("get all lists", async () => {
+    expect.assertions(2);
+
+    await listController
+      .getAll({ db: db })
+      .then((l) => {
+        expect(l).toBeInstanceOf(Array<ListWithId>);
+        expect(l.length).toBeGreaterThan(0);
       });
   });
 

@@ -1,6 +1,6 @@
 import { Db, MongoClient } from "mongodb";
 
-let dbConnection: Db
+export let dbConnection: Db
 
 export function connectToDb(connStr: string) {
   return new Promise<Db>((resolve, reject) => {
