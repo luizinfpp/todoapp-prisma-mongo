@@ -1,4 +1,4 @@
-import { User, UserWithId, ListWithId, List } from "../types";
+import { User, UserWithId, ListWithId, List } from "../../types";
 import { Db, InsertOneResult, ObjectId } from "mongodb";
 
 interface UserControllerInterface {

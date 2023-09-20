@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { connectToDb } from "./db";
-import userRoutes from "./routes/user";
-import listRoutes from "./routes/list";
+import { connectToDb } from "./adapters/controllers/db";
+import userRoutes from "./main/routes/user";
+import listRoutes from "./main/routes/list";
 import { Db } from "mongodb";
 import * as dotenv from "dotenv";
 

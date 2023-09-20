@@ -1,7 +1,7 @@
 import { ListController } from "../controllers/lists";
 import express from "express";
-import { dbConnection } from "../db";
-import { ListWithId, WithError } from "../types";
+import { dbConnection } from "../../external/config";
+import { ListWithId, WithError } from "../../types";
 
 const router = express.Router();
 

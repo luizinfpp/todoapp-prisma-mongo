@@ -1,7 +1,7 @@
-import { UserController } from "../controllers/users";
+import { UserController } from "../../adapters/controllers/users";
 import express from "express";
-import { UserWithId, WithError } from "../types";
-import { dbConnection } from "../db";
+import { UserWithId, WithError } from "../../types";
+import { dbConnection } from "../../external/config";
 
 const router = express.Router();
 
