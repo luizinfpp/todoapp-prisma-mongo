@@ -1,6 +1,7 @@
 import { UserController } from "../../adapters/controllers/users";
 import express from "express";
-import { UserWithId, WithError } from "../../types";
+import { WithError } from "../../entities/types";
+import { UserMongo } from "../../external/repositories/types";
 import { dbConnection } from "../../external/config";
 
 const router = express.Router();
@@ -12,7 +13,7 @@ interface GetUserRequest extends express.Request {
 }
 
 // login route
-router.post("/login",async (req: GetUserRequest, res: express.Response<WithError<UserWithId>>) => {
+router.post("/login",async (req: GetUserRequest, res: express.Response<WithError<UserMongo>>) => {
     
     // db = getDb();
     // let { name } = req.body;
@@ -27,7 +28,7 @@ router.post("/login",async (req: GetUserRequest, res: express.Response<WithError
   }
 );
 
-router.get("/", (req: express.Request, res: express.Response<WithError<UserWithId[]>>) => {
+router.get("/", (req: express.Request, res: express.Response<WithError<UserMongo[]>>) => {
 
   user.getAll({ db: dbConnection })
     .then((users) => {
