@@ -1,31 +1,36 @@
 import { z } from "zod"
-//import { ObjectId, WithId } from "mongodb"
 
 const Error = z.object({
   error: z.string(),
 });
 
-const ListItem = z.object({
-  text: z.string(),
-  checked: z.boolean(),
-});
+class ListItem {
+  text: string;
+  checked: boolean;
+}
 
-//type ListItemWithId = WithId<ListItem>;
+class List {
+  name: string;
+  user: User;
+  items: ListItem[];
+}
 
-const User = z.object({
-  name: z.string(),
-});
+class User {
+  name: string;
+}
 
-//type UserWithId = WithId<User>;
+/**Using zod object to biuld class */
 
-const List = z.object({
-  name: z.string(),
-  user: z.string(),
-  items: z.array(z.string())
-  //user: z.instanceof(ObjectId),
-  //items: z.instanceof(Array<ObjectId>)
-});
+// const User = z.object({
+//   name: z.string(),
+// });
 
-//type ListWithId = WithId<List>;
+// interface IUser extends z.infer<typeof User>{
+
+// }
+
+// class UserClass implements IUser {
+  
+// }
 
 export { Error, User, List, ListItem }

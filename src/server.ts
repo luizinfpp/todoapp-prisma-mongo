@@ -1,11 +1,12 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { connectToDb } from "./adapters/controllers/db";
+import { DbInstance } from "./adapters/controllers/db";
 import userRoutes from "./main/routes/user";
 import listRoutes from "./main/routes/list";
-import { Db } from "mongodb";
 import * as dotenv from "dotenv";
+import { dbObject } from "./adapters/controllers/repositories/db";
+import { DbInstanceMongo } from "./external/implementations/db";
 
 dotenv.config();
 const app = express();
@@ -15,17 +16,12 @@ const { MONGO_HOST, MONGO_PORT, MONGO_DBNAME, PORT } = process.env;
 app.use(cors());
 app.use(helmet());
 
-let db: Db;
+let db: dbObject;
+let connectionString = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DBNAME}`;
+const dbRepo = new DbInstanceMongo();
+const dbInstance = new DbInstance(dbRepo);
 
-let connectionStr = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DBNAME}`;
-
-connectToDb(connectionStr)
-  .then((dbConn) => {
-    db = dbConn;
-  })
-  .catch((err) => {
-    throw new Error(err);
-  });
+db = dbInstance.connect(connectionString);
 
 app.use("/user", userRoutes);
 

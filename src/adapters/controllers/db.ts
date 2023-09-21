@@ -1,10 +1,16 @@
-import { Db, MongoClient } from "mongodb";
+import { WithError } from "../../entities/types";
+import { DbInstanceRepository, dbObject } from "./repositories/db";
 
-export let dbConnection: Db
+export class DbInstance {
 
-export function connectToDb(connStr: string) {
-  return new Promise<Db>((resolve, reject) => {
-    
-  })
+  dbRepo : DbInstanceRepository;
+
+  constructor(dbRepo: DbInstanceRepository){
+    this.dbRepo = dbRepo;
+  }
+
+  connect(connStr: string) : WithError<dbObject> {
+    return this.dbRepo.connect(connStr);
+  }
 }
 
