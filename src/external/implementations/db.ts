@@ -8,7 +8,7 @@ import { WithError } from "../../entities/types";
 let dbConnection: Db;
 
 export class DbInstanceMongo implements DbInstanceRepository {
-  async connect(connectionString: string): Promise<WithError<dbObject>> {
+  connect = async (connectionString: string): Promise<dbObject> => {
     return new Promise<Db>((resolve, reject) => {
       MongoClient.connect(connectionString)
         .then((client) => {
