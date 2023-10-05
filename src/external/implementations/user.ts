@@ -1,9 +1,70 @@
 import { IUserRepository } from "../../adapters/controllers/repositories/user";
 import { User } from "../../entities/objects";
-import { WithError } from "../../entities/types";
 import { Db, InsertOneResult, ObjectId, WithId } from "mongodb";
 
 class UserMongoRepository implements IUserRepository {
+  /**Create an user.
+   * @param db the database
+   * @param user the user
+   * @returns a promise that resolves with the boolean if user was sucessfully created
+   */
+  create(db: Db, user: User): Promise<boolean> {
+    return new Promise<boolean>(async (resolve, reject) => {
+      db.collection<User>("users")
+        .insertOne({ name: user.name })
+        .then((result) => {
+          if (result) resolve(true);
+          else resolve(false);
+        })
+        .catch((err) => {
+          reject("Database error. Could not insert user. " + err);
+        });
+    });
+  }
+
+  /**
+   * This function deletes a user from a database based on their ID.
+   * @param db The database
+   * @param user The name of the user to be deleted
+   * @returns A Promise that resolves to void (i.e., nothing) if the user with the given id is
+   * successfully deleted from the "users" collection in the input database, or rejects with an error
+   * message if there is a problem with the deletion process.
+   */
+  delete(db: Db, user: User): Promise<void> {
+    const query = { name: user.name };
+
+    return new Promise<void>(async (resolve, reject) => {
+      db.collection<User>("users")
+        .deleteOne(query)
+        .then((result) => {
+          if (result.deletedCount > 0) resolve();
+          else reject("No user was found with the given id.");
+        })
+        .catch((err) => {
+          reject("Database error. Could not insert user. " + err);
+        });
+    });
+  }
+
+  /**
+   * Check if user exists.
+   * @param db the database
+   * @param name the name of the user
+   * @returns a promise that resolves with the boolean if user exists or reject with an error message
+   */
+  exists = async ({ db, name }: { db: Db; name: string }) => {
+    return new Promise<boolean>((resolve, reject) => {
+      db.collection<User>("users")
+        .findOne({ name: name })
+        .then((user) => {
+          if (user) resolve(true);
+          else resolve(false);
+        })
+        .catch((err) => {
+          reject("Database error. Could not fetch users. " + err);
+        });
+    });
+  };
 
   /**
    * Gets a user by its name.
@@ -11,10 +72,8 @@ class UserMongoRepository implements IUserRepository {
    * @param name the name of the user
    * @returns a promise that resolves with the user or reject with an error message
    */
-
-  get = async({ db, name }: { db: Db; name: string }) => {
-    
-    let result = new Promise<User>((resolve, reject) => {
+  get = async ({ db, name }: { db: Db; name: string }) => {
+    return new Promise<User>((resolve, reject) => {
       db.collection<User>("users")
         .findOne({ name: name })
         .then((user) => {
@@ -25,11 +84,26 @@ class UserMongoRepository implements IUserRepository {
           reject("Database error. Could not fetch users. " + err);
         });
     });
-
-    return result;
   };
 
+  /**
+   * Gets a user by its name.
+   * @param db the database
+   * @param name the name of the user
+   * @returns a promise that resolves with the user or reject with an error message
+   */
+  getAll = async (db: Db): Promise<User[]> => {
+    const users: User[] = [];
 
+    return new Promise<User[]>((resolve, reject) => {
+      db.collection<User>("users")
+        .find()
+        .toArray()
+        .catch((err) => {
+          reject("Database error. Could not fetch users. " + err);
+        });
+    });
+  };
 }
 
 // interface UserControllerInterface {

@@ -17,6 +17,10 @@ class List {
 
 class User {
   name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
 }
 
 /**Using zod object to biuld class */
