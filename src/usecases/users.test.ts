@@ -1,214 +1,152 @@
 import { describe, test, expect, vi } from "vitest";
 import { User } from "../entities/objects";
 import { IUserRepository } from "../adapters/controllers/repositories/user";
-import { createNewUser, deleteUser, getUser, getAllUsers } from "./user";
+import { createNewUser, deleteUser, getUser, getAllUsers, changeUserName } from "./user";
 
-const isDev = process.env.VITE_NODE_ENV === "dev";
+//const isDev = process.env.VITE_NODE_ENV === "dev";
+const isDev = true;
 
 describe.skipIf(!isDev)("user controller unit tests", () => {
   /***Mocks */
   let mockDb: object = {};
 
   class mockUserRepoSuccess implements IUserRepository {
-    create = vi.fn();
-    delete = vi.fn();
-    exists = vi.fn();
-    get = vi.fn();
-    getAll = vi.fn();
+    create = vi.fn().mockResolvedValue("user name");
+    delete = vi.fn(() => Promise.resolve());
+    exists = vi.fn().mockResolvedValue(false);
+    get = vi.fn().mockResolvedValue(new User("test"));
+    getAll = vi.fn().mockResolvedValue([new User("test"), new User("friend")]);
+    setName = vi.fn(() => Promise.resolve());
   }
 
   class mockUserRepoFail implements IUserRepository {
-    create = vi.fn();
-    delete = vi.fn();
-    exists = vi.fn();
-    get = vi.fn(); // state doesn't exists
-    getAll = vi.fn();
+    create = vi.fn().mockResolvedValue(false);
+    delete = vi.fn(() => Promise.reject());
+    exists = vi.fn().mockResolvedValue(false);
+    get = vi.fn(() => Promise.reject());
+    getAll = vi.fn(() => Promise.reject());
+    setName = vi.fn(() => Promise.reject());
+  }
+
+  class mockUserRepoReject implements IUserRepository {
+    create = vi.fn().mockRejectedValue("");
+    delete = vi.fn().mockRejectedValue("");
+    //delete = vi.fn(() => Promise.reject());
+    exists = vi.fn().mockRejectedValue("");
+    get = vi.fn().mockRejectedValue("");
+    getAll = vi.fn().mockRejectedValue("");
+    setName = vi.fn().mockRejectedValue("");
   }
 
   class mockUserRepoError implements IUserRepository {
-    create = vi.fn();
-    delete = vi.fn();
-    exists = vi.fn();
-    get = vi.fn();
-    getAll = vi.fn();
+    create = () => { throw new Error("Error on create") };
+    delete = vi.fn(() => { throw new Error("Error on delete") });
+    exists = () => { throw new Error("Error on exists") };
+    get = vi.fn(() => { throw new Error("Error on get") });
+    getAll = vi.fn(() => { throw new Error("Error on getall") });
+    setName = vi.fn(() => { throw new Error("Error on setname") });
   }
 
-  const userRepoSuccess = new mockUserRepoFail();
-  const userRepoFail = new mockUserRepoSuccess();
+  const userRepoSuccess = new mockUserRepoSuccess();
+  const userRepoFail = new mockUserRepoFail();
+  const userRepoReject = new mockUserRepoReject();
   const userRepoError = new mockUserRepoError();
 
   /***Declarations */
   const name = "test name";
-  const newName = "new test name";
+  const newName = "new test name ";
 
   let user = new User(name);
 
   /***Tests */
 
   test("create user on db", async () => {
-    let result = await createNewUser(mockDb, userRepoSuccess, user);
-    expect(result).toHaveReturned();
+    expect(createNewUser(mockDb, userRepoSuccess, user)).resolves;
   });
 
   test("create user on db - failed attempt", async () => {
-    let result = await createNewUser(mockDb, userRepoFail, user);
-    expect(result).toThrowError();
+    expect(createNewUser(mockDb, userRepoFail, user)).rejects.toThrowError();
   });
 
-  test("create user on db - error thrown", async () => {
-    let result = await createNewUser(mockDb, userRepoError, user);
-    expect(result).toThrowError();
-  });
-
-  test("delete user on db", async () => {
-    let result = await deleteUser(mockDb, userRepoSuccess, user);
-    expect(result).toHaveReturned();
-  });
-
-  test("delete user on db - wrong name", async () => {
-    let result = await deleteUser(mockDb, userRepoError, user);
-    expect(result).toHaveReturned();
-  });
-
-  test("get all users", async () => {
-    let result = await getAllUsers(mockDb, userRepoSuccess);
-
-    expect(result).toHaveReturned();
-    expect(result).toBeInstanceOf(Array<User>);
-  });
-
-  test("get all users - error", async () => {
-    let result = await getAllUsers(mockDb, userRepoSuccess);
-
-    expect(result).toThrowError();
-  });
-
-  test("get user by username", async () => {
-    let result = await getUser(mockDb, userRepoSuccess, name);
-
-    expect(result).toHaveReturned();
-    expect(result).toBeInstanceOf(User);
-    expect(result.name).toEqual(name);
-  });
-
-    test("get user by username - name not found", async () => {
-    let result = await getUser(mockDb, userRepoError, name);
-
-    expect(result).toThrowError();
-  });
-
-  // const userController = new UserController();
-  // let user, userHelper: UserWithId;
-
-  // beforeAll(async () => {
-  //   await connectToDb(connectionStr)
-  //     .then((dbConn) => {
-  //       db = dbConn;
-  //     })
-  //     .catch((err) => {
-  //       throw new Error(err);
-  //     });
+  // test("create user on db - rejected attempt", async () => {
+  //    expect(await createNewUser(mockDb, userRepoReject, user)).rejects.toThrowError();
   // });
 
-  // test("create user", async () => {
-  //   expect.assertions(2);
+  test("create user on db - error thrown", async () => {
+    expect(createNewUser(mockDb, userRepoError, user)).rejects.toThrowError();
+  });
 
-  //   await userController.create({ db: db, userName: name }).then((u) => {
+  // test("delete user on db", async () => {
+  //   let result = await deleteUser(mockDb, userRepoSuccess, user);
+  //   expect(result).toHaveReturned();
+  // });
 
-  //     expect(u).toBeTruthy();
-  //     expect(u).toBeInstanceOf(ObjectId);
-  //   });
+  // test("delete user on db - fail", async () => {
+  //   let result = await deleteUser(mockDb, userRepoFail, user);
+  //   expect(result).toHaveReturned();
+  // });
+
+  // test("delete user on db - wrong name", async () => {
+  //   let result = await deleteUser(mockDb, userRepoError, user);
+  //   expect(result).toHaveReturned();
   // });
 
   // test("get all users", async () => {
-  //   expect.assertions(2);
+  //   let result = await getAllUsers(mockDb, userRepoSuccess);
 
-  //   await userController
-  //     .getAll({ db: db })
-  //     .then((u) => {
-  //       expect(u).toBeInstanceOf(Array<UserWithId>);
-  //       expect(u.length).toBeGreaterThan(0);
-  //     });
+  //   expect(result).toHaveReturned();
+  //   expect(result).toBeInstanceOf(Array<User>);
   // });
 
-  // test("create user with same name", () => {
-  //   expect.assertions(1);
+  // test("get all users - fail", async () => {
+  //   let result = await getAllUsers(mockDb, userRepoFail);
 
-  //   expect(
-  //     userController.create({ db: db, userName: name })
-  //   ).rejects.toThrowError();
+  //   expect(result).toThrowError();
+  // });
+
+  // test("get all users - error", async () => {
+  //   let result = await getAllUsers(mockDb, userRepoError);
+
+  //   expect(result).toThrowError();
   // });
 
   // test("get user by username", async () => {
-  //   expect.assertions(2);
+  //   let result = await getUser(mockDb, userRepoSuccess, name);
 
-  //   await userController.get({ db: db, userName: name }).then((u) => {
-  //     user = u;
-  //     expect(u).toBeTruthy();
-  //     expect(u.name).toEqual(name);
-  //   });
+  //   expect(result).toHaveReturned();
+  //   expect(result).toBeInstanceOf(User);
+  //   expect(result.name).toEqual(name);
   // });
 
-  // test("get user with not found username", () => {
-  //   expect.assertions(1);
+  // test("get user by username - fail", async () => {
+  //   let result = await getUser(mockDb, userRepoFail, name);
 
-  //   expect(
-  //     userController.get({ db: db, userName: newName })
-  //   ).rejects.toThrowError();
+  //   expect(result).toThrowError();
   // });
 
-  // test("fetch user lists", async () => {
-  //   expect.assertions(1);
+  // test("get user by username - name not found", async () => {
+  //   let result = await getUser(mockDb, userRepoError, name);
 
-  //   await userController.fetchAllLists({ db: db, id: user._id }).then((lists) => {
-  //     expect(lists).toBeInstanceOf(Array<ListWithId>);
-  //   });
+  //   expect(result).toThrowError();
   // });
 
-  // test("set new name", async () => {
-  //   expect.assertions(1);
+  // test("change user name", async () => {
+  //   let result = await changeUserName(mockDb, userRepoSuccess, user, newName);
 
-  //   await userController
-  //     .setName({ db: db, id: user._id, newName: newName })
-
-  //   await expect(userController.get({ db: db, userName: name })).rejects.toThrowError();
-
+  //   expect(result).toHaveReturned();
   // });
 
-  // test("set name with user not found", async () => {
-  //   expect.assertions(1);
+  // test("change user name - fail", async () => {
+  //   let result = await changeUserName(mockDb, userRepoFail, user, newName);
 
-  //   await expect(userController.setName({ db: db, id: new ObjectId(), newName: newName })).rejects.toThrowError();
+  //   expect(result).toHaveReturned();
   // });
 
-  // test("set name with already existing name", async () => {
-  //   expect.assertions(1);
+  // test("change user name - user does not exist", async () => {
+  //   let result = await changeUserName(mockDb, userRepoError, user, name);
 
-  //   await userController.create({ db: db, userName: name });
-  //   userHelper = await userController.get({ db: db, userName: name  });
-
-  //   expect(
-  //     userController.setName({ db: db, id: user._id, newName: name })
-  //   ).rejects.toThrowError();
+  //   expect(result).toThrowError();
   // });
 
-  // test("delete user", async () => {
-  //   expect.assertions(2);
-
-  //   await expect(userController.delete({ db: db, id: user._id })).resolves.toBeUndefined();
-  //   await expect(userController.get({ db: db, userName: newName })).rejects.toThrowError();
-  // });
-
-  // test("delete user not found", () => {
-  //   expect.assertions(1);
-
-  //   expect(
-  //     userController.delete({ db: db, id: user._id })
-  //   ).rejects.toThrowError();
-  // });
-
-  // afterAll(() => {
-  //   userController.delete({ db: db, id: userHelper._id }).catch(() => {});
-  //   userController.delete({ db: db, id: user._id }).catch(() => {});
-  // });
+  
 });

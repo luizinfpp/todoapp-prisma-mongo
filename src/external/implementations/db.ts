@@ -3,18 +3,16 @@ import {
   DbInstanceRepository,
   dbObject,
 } from "../../adapters/controllers/repositories/db";
-import { WithError } from "../../entities/types";
 
-let dbConnection: Db;
+
 
 export class DbInstanceMongo implements DbInstanceRepository {
   connect = async (connectionString: string): Promise<dbObject> => {
     return new Promise<Db>((resolve, reject) => {
       MongoClient.connect(connectionString)
         .then((client) => {
-          dbConnection = client.db();
           console.log("Connected to todo-app database.");
-          resolve(dbConnection);
+          resolve(client.db());
         })
         .catch((err) => {
           console.log(err);

@@ -1,42 +1,88 @@
-import { UserController } from "../../adapters/controllers/users";
+import { IUserRepository } from "../../adapters/controllers/repositories/user";
 import express from "express";
-import { WithError } from "../../entities/types";
+import { User } from "../../entities/objects";
+import { createNewUser, deleteUser, getUser, getAllUsers, changeUserName } from "../../usecases/user";
+import { getDb } from "../../adapters/controllers/db";
 
 const router = express.Router();
 
-const user = new UserController();
 
 interface GetUserRequest extends express.Request {
-  body: { name: string };
+  body: { repo: IUserRepository; name: string };
+}
+interface GetAllUsersRequest extends express.Request {
+  body: { repo: IUserRepository};
+}
+interface PutUserRequest extends express.Request {
+  body: { repo: IUserRepository; name: string; newName: string };
 }
 
+const db = getDb();
+
 // login route
-// router.post("/login",async (req: GetUserRequest, res: express.Response<WithError<UserMongo>>) => {
-    
-//     db = getDb();
-//     let { name } = req.body;
+router.post("/", async (req: GetUserRequest, res) => {
+  let { repo, name } = req.body;
+  const user = new User(name);
 
-//     user.getUser(db, name)
-//       .then((user) => {
-//         res.status(200).json(user);
-//       })
-//       .catch(() => {
-//         res.status(500).json({ error: "Could not fetch users" });
-//       });
-//   }
-// );
+  createNewUser(db, repo, user)
+    .then(() => {
+      res.status(200);
+    })
+    .catch(() => {
+      res.status(500).json({ error: "Could not create user" });
+    });
+});
 
-// router.get("/", (req: express.Request, res: express.Response<WithError<UserMongo[]>>) => {
+router.get("/", async (req: GetUserRequest, res) => {
+  let { repo, name } = req.body;
 
-//   user.getAll({ db: dbConnection })
-//     .then((users) => {
-//       res.status(200).json(users);
-//     }).catch(() => {
-//       res.status(500).json({ error: "Could not fetch users" });
-//     })
+  getUser(db, repo, name)
+    .then(() => {
+      res.status(200);
+    })
+    .catch(() => {
+      res.status(500).json({ error: "Could not fetch user" });
+    });
+});
 
-// });
+router.get("/", async (req: GetUserRequest, res) => {
+  let { repo } = req.body;
 
+  getAllUsers(db, repo)
+    .then(() => {
+      res.status(200);
+    })
+    .catch(() => {
+      res.status(500).json({ error: "Could not fetch users" });
+    });
+});
 
+router.put("/", async (req: PutUserRequest, res) => {
+  let { repo, name, newName } = req.body;
+
+  const user = new User(name);
+
+  changeUserName(db, repo, user, newName)
+    .then(() => {
+      res.status(200);
+    })
+    .catch(() => {
+      res.status(500).json({ error: "Could not update user" });
+    });
+});
+
+router.delete("/", async (req: GetUserRequest, res) => {
+  let { repo, name } = req.body;
+
+  const user = new User(name);
+
+  deleteUser(db, repo, user)
+    .then(() => {
+      res.status(200);
+    })
+    .catch(() => {
+      res.status(500).json({ error: "Could not delete user" });
+    });
+});
 
 export default router;

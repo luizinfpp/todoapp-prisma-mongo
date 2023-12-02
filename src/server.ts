@@ -1,12 +1,12 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { DbInstance } from "./adapters/controllers/db";
+import { connect } from "./adapters/controllers/db";
 import userRoutes from "./main/routes/user";
 import listRoutes from "./main/routes/list";
 import * as dotenv from "dotenv";
-import { dbObject } from "./adapters/controllers/repositories/db";
 import { DbInstanceMongo } from "./external/implementations/db";
+import { UserMongoRepository } from "./external/implementations/user";
 
 dotenv.config();
 const app = express();
@@ -16,14 +16,21 @@ const { MONGO_HOST, MONGO_PORT, MONGO_DBNAME, PORT } = process.env;
 app.use(cors());
 app.use(helmet());
 
-let db: dbObject;
 let connectionString = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DBNAME}`;
 const dbRepo = new DbInstanceMongo();
-const dbInstance = new DbInstance(dbRepo);
 
-db = dbInstance.connect(connectionString);
+await connect(connectionString, dbRepo);
 
-app.use("/user", userRoutes);
+let userRepo = new UserMongoRepository();
+
+const addRepoMiddleware = (repo) => {
+  return (req, res, next) => {
+    req.body.repo = repo;
+    next();
+  }
+}
+
+app.use("/user", addRepoMiddleware(userRepo), userRoutes);
 
 app.use("/list", listRoutes);
 

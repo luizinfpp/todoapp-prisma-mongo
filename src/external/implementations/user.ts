@@ -1,23 +1,23 @@
 import { IUserRepository } from "../../adapters/controllers/repositories/user";
 import { User } from "../../entities/objects";
-import { Db, InsertOneResult, ObjectId, WithId } from "mongodb";
+import { Db } from "mongodb";
 
-class UserMongoRepository implements IUserRepository {
+export class UserMongoRepository implements IUserRepository {
   /**Create an user.
    * @param db the database
    * @param user the user
    * @returns a promise that resolves with the boolean if user was sucessfully created
    */
-  create(db: Db, user: User): Promise<boolean> {
-    return new Promise<boolean>(async (resolve, reject) => {
+  create(db: Db, user: User): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
       db.collection<User>("users")
         .insertOne({ name: user.name })
         .then((result) => {
-          if (result) resolve(true);
-          else resolve(false);
+          if (result) resolve(user.name);
+          else reject(new Error("User name already exists on database."));
         })
         .catch((err) => {
-          reject("Database error. Could not insert user. " + err);
+          reject(new Error("Database error. Could not insert user. " + err));
         });
     });
   }
@@ -38,10 +38,10 @@ class UserMongoRepository implements IUserRepository {
         .deleteOne(query)
         .then((result) => {
           if (result.deletedCount > 0) resolve();
-          else reject("No user was found with the given id.");
+          else reject(new Error("No user was found with the given id."));
         })
         .catch((err) => {
-          reject("Database error. Could not insert user. " + err);
+          reject(new Error("Database error. Could not insert user. " + err));
         });
     });
   }
@@ -61,7 +61,7 @@ class UserMongoRepository implements IUserRepository {
           else resolve(false);
         })
         .catch((err) => {
-          reject("Database error. Could not fetch users. " + err);
+          reject(new Error("Database error. Could not fetch users. " + err));
         });
     });
   };
@@ -78,10 +78,10 @@ class UserMongoRepository implements IUserRepository {
         .findOne({ name: name })
         .then((user) => {
           if (user) resolve(user);
-          else reject("There is no user with the given name.");
+          else reject(new Error("There is no user with the given name."));
         })
         .catch((err) => {
-          reject("Database error. Could not fetch users. " + err);
+          reject(new Error("Database error. Could not fetch users. " + err));
         });
     });
   };
@@ -93,17 +93,30 @@ class UserMongoRepository implements IUserRepository {
    * @returns a promise that resolves with the user or reject with an error message
    */
   getAll = async (db: Db): Promise<User[]> => {
-    const users: User[] = [];
-
+    
     return new Promise<User[]>((resolve, reject) => {
       db.collection<User>("users")
         .find()
         .toArray()
         .catch((err) => {
-          reject("Database error. Could not fetch users. " + err);
+          reject(new Error("Database error. Could not fetch users. " + err));
         });
     });
   };
+
+  setName = async (db: Db, user: User, newName: string) => {
+    return new Promise<void>(async (resolve, reject) => {
+      db.collection<User>("users")
+        .updateOne({ name: user.name }, { $set: { name: newName } })
+        .then((result) => {
+          if (result.modifiedCount > 0) resolve();
+          else reject(new Error("No user was found with the given id."));
+        })
+        .catch((err) => {
+          reject(new Error("Database error. Could not update user. " + err));
+        });
+    });
+  }
 }
 
 // interface UserControllerInterface {

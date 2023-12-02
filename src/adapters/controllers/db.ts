@@ -1,22 +1,23 @@
-import { WithError } from "../../entities/types";
 import { DbInstanceRepository, dbObject } from "./repositories/db";
-
-export class DbInstance {
-  dbRepo: DbInstanceRepository;
-
-  constructor(dbRepo: DbInstanceRepository) {
-    this.dbRepo = dbRepo;
-  }
-
-  connect = (connStr: string): dbObject => {
-    let result = this.dbRepo
-      .connect(connStr)
-      .then((db) => db)
-      .catch((err) => {
-        throw new Error(err);
-      });
-
-     return result; 
-  }
   
+let dbInstance : dbObject | null = null;
+
+const connect = async (connStr: string, dbRepo: DbInstanceRepository): Promise<void> => {
+  dbRepo
+    .connect(connStr)
+    .then((db) => dbInstance = db)
+    .catch((err) => {
+      throw new Error(err);
+    });
 }
+
+const getDb = (): dbObject => {
+  if(dbInstance == null)
+    throw new Error("Database not connected.");
+
+  return dbInstance;
+}
+
+export { connect, getDb }
+
+  
