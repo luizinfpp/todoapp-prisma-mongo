@@ -1,5 +1,5 @@
 {
-  "name": "base-node-server",
+  "name": "todoapp-prisma-mongo",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,7 +10,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui"
   },
-  "author": "",
+  "author": "luizinfpp",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
@@ -23,10 +23,10 @@
   "devDependencies": {
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
-    "@vitest/ui": "^0.31.0",
+    "@vitest/ui": "^0.34.6",
     "tsup": "^6.7.0",
     "tsx": "^3.12.6",
     "typescript": "^5.0.4",
-    "vitest": "^0.31.0"
+    "vitest": "^0.34.6"
   }
 }
