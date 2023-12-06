@@ -52,7 +52,7 @@ export class UserMongoRepository implements IUserRepository {
    * @param name the name of the user
    * @returns a promise that resolves with the boolean if user exists or reject with an error message
    */
-  exists = async ({ db, name }: { db: Db; name: string }) => {
+  exists = async (db: Db, name: string) => {
     return new Promise<boolean>((resolve, reject) => {
       db.collection<User>("users")
         .findOne({ name: name })
@@ -72,7 +72,7 @@ export class UserMongoRepository implements IUserRepository {
    * @param name the name of the user
    * @returns a promise that resolves with the user or reject with an error message
    */
-  get = async ({ db, name }: { db: Db; name: string }) => {
+  get = async (db: Db, name: string ) => {
     return new Promise<User>((resolve, reject) => {
       db.collection<User>("users")
         .findOne({ name: name })
@@ -89,11 +89,9 @@ export class UserMongoRepository implements IUserRepository {
   /**
    * Gets a user by its name.
    * @param db the database
-   * @param name the name of the user
-   * @returns a promise that resolves with the user or reject with an error message
+   * @returns a promise that resolves with all users or reject with an error message
    */
   getAll = async (db: Db): Promise<User[]> => {
-    
     return new Promise<User[]>((resolve, reject) => {
       db.collection<User>("users")
         .find()

@@ -1,37 +1,49 @@
 import { User } from "../../entities/objects";
+import { getDb, getUserRepo } from "./db";
 import { dbObject } from "./repositories/db";
 import { IUserRepository } from "./repositories/user";
 
 export class UserController {
-  db: dbObject;
-  private userRepo: IUserRepository;
-
-  constructor(db: dbObject, userRepository: IUserRepository) {
-    this.db = db;
-    this.userRepo = userRepository;
-  }
 
   createUserOnDB = async (user: User): Promise<string> => {
-    return await this.userRepo.create(this.db, user);
+    const db : dbObject = await getDb();
+    const userRepo : IUserRepository = await getUserRepo();
+
+    return await userRepo.create(db, user);
   }
 
   deleteOfDb = async (user: User): Promise<void> => {
-    return await this.userRepo.delete(this.db, user);
+    const db : dbObject = await getDb();
+    const userRepo : IUserRepository = await getUserRepo();
+
+    return await userRepo.delete(db, user);
   }
 
   existsOnDb = async (name: string): Promise<boolean> => {
-    return await this.userRepo.exists(this.db, name);
+    const db : dbObject = await getDb();
+    const userRepo : IUserRepository = await getUserRepo();
+
+    return await userRepo.exists(db, name);
   } 
 
   getAllUsersFromDb = async (): Promise<User[]> => {
-    return await this.userRepo.getAll(this.db);
+    const db : dbObject = await getDb();
+    const userRepo : IUserRepository = await getUserRepo();
+    
+    return await userRepo.getAll(db);
   }; 
 
   getUserFromDb = async (name: string): Promise<User> => {
-    return await this.userRepo.get(this.db, name);
+    const db : dbObject = await getDb();
+    let userRepo : IUserRepository = await getUserRepo();
+
+    return await userRepo.get(db, name);
   }; 
 
   setUserNameOnDb = async (user: User, newName: string): Promise<void> => {
-    return await this.userRepo.setName(this.db, user, newName);
+    const db : dbObject = await getDb();
+    const userRepo : IUserRepository = await getUserRepo();
+    
+    return await userRepo.setName(db, user, newName);
   }; 
 }

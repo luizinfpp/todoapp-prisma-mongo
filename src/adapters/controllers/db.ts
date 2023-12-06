@@ -1,23 +1,37 @@
 import { DbInstanceRepository, dbObject } from "./repositories/db";
-  
-let dbInstance : dbObject | null = null;
+import { IUserRepository } from "./repositories/user"
 
-const connect = async (connStr: string, dbRepo: DbInstanceRepository): Promise<void> => {
-  dbRepo
-    .connect(connStr)
-    .then((db) => dbInstance = db)
-    .catch((err) => {
-      throw new Error(err);
-    });
-}
+let dbInstance: dbObject | null = null;
 
-const getDb = (): dbObject => {
-  if(dbInstance == null)
-    throw new Error("Database not connected.");
+type reposType = { user: IUserRepository }
 
-  return dbInstance;
-}
+let repos : reposType | null = null;
 
-export { connect, getDb }
+const connect = async (
+  connStr: string,
+  dbRepo: DbInstanceRepository
+): Promise<void> => {
+  return new Promise<void>(() => {
+    dbRepo.connect(connStr).then((db) => { dbInstance = db; });
+  });
+};
 
-  
+const getDb = async (): Promise<dbObject> => {
+  return new Promise<dbObject>((resolve, reject) => {
+    if (dbInstance == null) reject(new Error("Database not connected."));
+    else resolve(dbInstance);
+  });
+};
+
+const getUserRepo = async (): Promise<IUserRepository> => {
+  return new Promise<IUserRepository>((resolve, reject) => {
+    if (repos == null) reject(new Error("Repositories information was not set yet."));
+    else resolve(repos.user);
+  });
+};
+
+const setRepos = (userRepo: IUserRepository): void => {
+    repos = { user: userRepo };
+};
+
+export { connect, getDb, getUserRepo, setRepos };

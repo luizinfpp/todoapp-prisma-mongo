@@ -2,29 +2,17 @@ import { IUserRepository } from "../../adapters/controllers/repositories/user";
 import express from "express";
 import { User } from "../../entities/objects";
 import { createNewUser, deleteUser, getUser, getAllUsers, changeUserName } from "../../usecases/user";
-import { getDb } from "../../adapters/controllers/db";
 
 const router = express.Router();
 
 
-interface GetUserRequest extends express.Request {
-  body: { repo: IUserRepository; name: string };
-}
-interface GetAllUsersRequest extends express.Request {
-  body: { repo: IUserRepository};
-}
-interface PutUserRequest extends express.Request {
-  body: { repo: IUserRepository; name: string; newName: string };
-}
-
-const db = getDb();
 
 // login route
-router.post("/", async (req: GetUserRequest, res) => {
-  let { repo, name } = req.body;
+router.post("/", async (req, res) => {
+  let { name } = req.body;
   const user = new User(name);
 
-  createNewUser(db, repo, user)
+  createNewUser(user)
     .then(() => {
       res.status(200);
     })
@@ -33,10 +21,10 @@ router.post("/", async (req: GetUserRequest, res) => {
     });
 });
 
-router.get("/", async (req: GetUserRequest, res) => {
-  let { repo, name } = req.body;
+router.get("/", async (req, res) => {
+  let name : string = req.body.name;
 
-  getUser(db, repo, name)
+  getUser(name)
     .then(() => {
       res.status(200);
     })
@@ -45,10 +33,9 @@ router.get("/", async (req: GetUserRequest, res) => {
     });
 });
 
-router.get("/", async (req: GetUserRequest, res) => {
-  let { repo } = req.body;
+router.get("/all", async (req, res) => {
 
-  getAllUsers(db, repo)
+  getAllUsers()
     .then(() => {
       res.status(200);
     })
@@ -57,12 +44,12 @@ router.get("/", async (req: GetUserRequest, res) => {
     });
 });
 
-router.put("/", async (req: PutUserRequest, res) => {
-  let { repo, name, newName } = req.body;
+router.put("/", async (req, res) => {
+  let { name, newName } = req.body;
 
   const user = new User(name);
 
-  changeUserName(db, repo, user, newName)
+  changeUserName(user, newName)
     .then(() => {
       res.status(200);
     })
@@ -71,12 +58,12 @@ router.put("/", async (req: PutUserRequest, res) => {
     });
 });
 
-router.delete("/", async (req: GetUserRequest, res) => {
-  let { repo, name } = req.body;
+router.delete("/", async (req, res) => {
+  let { name } = req.body;
 
   const user = new User(name);
 
-  deleteUser(db, repo, user)
+  deleteUser(user)
     .then(() => {
       res.status(200);
     })

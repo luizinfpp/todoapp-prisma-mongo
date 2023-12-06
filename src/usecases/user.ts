@@ -1,10 +1,9 @@
-import { dbObject } from "../adapters/controllers/repositories/db";
 import { IUserRepository } from "../adapters/controllers/repositories/user";
 import { UserController } from "../adapters/controllers/users";
 import { User } from "../entities/objects";
 
-export const createNewUser = async (db:dbObject, repo: IUserRepository, user: User) : Promise<void> => {
-  const userController = new UserController(db, repo);
+export const createNewUser = async (user: User) : Promise<void> => {
+  const userController = new UserController();
   
   return new Promise<void>((resolve, reject) => {
     userController.existsOnDb(user.name).then((exists) => {
@@ -25,13 +24,13 @@ export const createNewUser = async (db:dbObject, repo: IUserRepository, user: Us
   
 }
 
-export const deleteUser = async (db:dbObject, repo: IUserRepository, user: User) : Promise<void> => {
-  const userController = new UserController(db, repo);
+export const deleteUser = async (user: User) : Promise<void> => {
+  const userController = new UserController();
   await userController.deleteOfDb(user);
 };
 
-export const getAllUsers = async (db:dbObject, repo: IUserRepository) : Promise<User[]> => {
-  const userController = new UserController(db, repo);
+export const getAllUsers = async () : Promise<User[]> => {
+  const userController = new UserController();
 
   return new Promise<User[]>(async (resolve, reject) => {
     const result = await userController.getAllUsersFromDb();
@@ -43,8 +42,8 @@ export const getAllUsers = async (db:dbObject, repo: IUserRepository) : Promise<
   });
 };
 
-export const getUser = async (db:dbObject, repo: IUserRepository, name: string) : Promise<User> => {
-  const userController = new UserController(db, repo);
+export const getUser = async (name: string) : Promise<User> => {
+  const userController = new UserController();
 
   return new Promise<User>(async (resolve, reject) => {
     const result = await userController.getUserFromDb(name);
@@ -57,7 +56,7 @@ export const getUser = async (db:dbObject, repo: IUserRepository, name: string) 
 
 };
 
-export const changeUserName = async (db:dbObject, repo: IUserRepository, user: User, newName: string) : Promise<void> => {
-  const userController = new UserController(db, repo);
+export const changeUserName = async (user: User, newName: string) : Promise<void> => {
+  const userController = new UserController();
   await userController.setUserNameOnDb(user, newName);
 };
