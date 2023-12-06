@@ -1,4 +1,3 @@
-import { IUserRepository } from "../adapters/controllers/repositories/user";
 import { UserController } from "../adapters/controllers/users";
 import { User } from "../entities/objects";
 
@@ -20,8 +19,6 @@ export const createNewUser = async (user: User) : Promise<void> => {
       }
     });
   });
-
-  
 }
 
 export const deleteUser = async (user: User) : Promise<void> => {

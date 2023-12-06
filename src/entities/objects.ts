@@ -13,6 +13,12 @@ class List {
   name: string;
   user: User;
   items: ListItem[];
+
+  constructor(name: string, user: User){
+    this.name = name;
+    this.user = user;
+    this.items = [];
+  }
 }
 
 class User {
