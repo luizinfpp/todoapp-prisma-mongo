@@ -54,7 +54,7 @@ export class ListController {
     return await listRepo.addItem(db, list, listItem);
   }; 
 
-  fetchAllItemsOfListOnDb = async (list: List, listItem: ListItem): Promise<ListItem[]> => {
+  fetchAllItemsOfListOnDb = async (list: List): Promise<ListItem[]> => {
     const db : dbObject = await getDb();
     const listRepo : IListRepository = await getListRepo();
     

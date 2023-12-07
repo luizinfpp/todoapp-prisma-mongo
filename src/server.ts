@@ -3,9 +3,11 @@ import cors from "cors";
 import helmet from "helmet";
 import { connect, setRepos } from "./adapters/controllers/db";
 import userRoutes from "./main/routes/user";
+import listRoutes from "./main/routes/list";
 import * as dotenv from "dotenv";
 import { DbInstanceMongo } from "./external/implementations/db";
 import { UserMongoRepository } from "./external/implementations/user";
+import { ListMongoRepository } from "./external/implementations/lists";
 
 const bodyParser = require('body-parser')
 
@@ -25,14 +27,15 @@ connect(connectionString, dbRepo).catch(() => {
 });
 
 let userRepo = new UserMongoRepository();
+let listRepo = new ListMongoRepository();
 
-setRepos(userRepo);
+setRepos(userRepo, listRepo);
 
 app.use(bodyParser.json()) 
 
 app.use("/user", userRoutes);
 
-//app.use("/list", listRoutes);
+app.use("/list", listRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ status: "Api Running!!" });

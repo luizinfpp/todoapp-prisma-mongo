@@ -1,11 +1,8 @@
-import { IUserRepository } from "../../adapters/controllers/repositories/user";
 import express from "express";
 import { User } from "../../entities/objects";
 import { createNewUser, deleteUser, getUser, getAllUsers, changeUserName } from "../../usecases/user";
 
 const router = express.Router();
-
-
 
 // login route
 router.post("/", async (req, res) => {
